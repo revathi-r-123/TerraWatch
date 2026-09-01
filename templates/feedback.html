@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Feedback - TerraWatch{% endblock %}
+
+{% block content %}
+
+<h1>TerraWatch</h1>
+
+<h2>Feedback</h2>
+
+{% if success %}
+    <p>{{ success }}</p>
+{% endif %}
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    <label>Your Feedback:</label>
+
+    <br>
+
+    <textarea
+        name="message"
+        rows="6"
+        required
+    ></textarea>
+
+    <br><br>
+
+    <button type="submit">
+        Submit Feedback
+    </button>
+
+</form>
+
+<br>
+
+<a href="{% url 'citizen_dashboard' %}">
+    Back to Dashboard
+</a>
+
+{% endblock %}

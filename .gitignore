@@ -1,0 +1,7 @@
+terra/
+__pycache__/
+*.py[cod]
+db.sqlite3
+.env
+media/
+.vscode/

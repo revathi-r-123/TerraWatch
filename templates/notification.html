@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - TerraWatch{% endblock %}
+
+{% block content %}
+
+<h1>TerraWatch</h1>
+
+<h2>Notifications</h2>
+
+{% if notifications %}
+
+    {% for notification in notifications %}
+
+        <p>
+            {{ notification.message }}
+        </p>
+
+        <small>
+            {{ notification.created_at }}
+        </small>
+
+        <hr>
+
+    {% endfor %}
+
+{% else %}
+
+    <p>No notifications available.</p>
+
+{% endif %}
+
+<br>
+
+<a href="{% url 'citizen_dashboard' %}">
+    Back to Dashboard
+</a>
+
+{% endblock %}

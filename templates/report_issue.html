@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Report an Issue - TerraWatch{% endblock %}
+
+{% block content %}
+
+<h1>TerraWatch</h1>
+
+<h2>Report an Environmental Issue</h2>
+
+<form method="POST" enctype="multipart/form-data">
+
+
+{% csrf_token %}
+
+<label>Issue Title:</label>
+<input type="text" name="title" required>
+
+<br><br>
+
+<label>Description:</label>
+<br>
+<textarea name="description" rows="5" required></textarea>
+
+<br><br>
+
+<label>Location:</label>
+<input type="text" name="location" required>
+
+<br><br>
+
+<h3>Incident Photo</h3>
+
+<p>Take a photo of the environmental issue:</p>
+
+<!-- Camera preview -->
+<video
+    id="camera"
+    width="400"
+    height="300"
+    autoplay
+    playsinline
+    style="border: 1px solid black;">
+</video>
+
+<br><br>
+
+<button type="button" id="startCamera">
+    Open Camera
+</button>
+
+<button type="button" id="capturePhoto">
+    Capture Photo
+</button>
+
+<button type="button" id="retakePhoto">
+    Retake Photo
+</button>
+
+<br><br>
+
+<!-- Captured image preview -->
+<canvas
+    id="photoCanvas"
+    width="400"
+    height="300"
+    style="display:none; border:1px solid black;">
+</canvas>
+
+<br><br>
+
+<!-- Hidden file input -->
+<input
+    type="file"
+    name="image"
+    id="imageInput"
+    accept="image/*"
+    style="display:none;"
+>
+
+<p id="cameraMessage"></p>
+
+<br>
+
+<button type="submit">
+    Submit Report
+</button>
+```
+
+</form>
+
+<br>
+
+<a href="{% url 'citizen_dashboard' %}">
+    Back to Dashboard
+</a>
+
+<script>
+
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('photoCanvas');
+
+    const startCameraButton =
+        document.getElementById('startCamera');
+
+    const capturePhotoButton =
+        document.getElementById('capturePhoto');
+
+    const retakePhotoButton =
+        document.getElementById('retakePhoto');
+
+    const imageInput =
+        document.getElementById('imageInput');
+
+    const message =
+        document.getElementById('cameraMessage');
+
+    let stream = null;
+
+
+    // Open camera
+    startCameraButton.addEventListener('click', async function () {
+
+        try {
+
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: {
+                        ideal: "environment"
+                    }
+                },
+                audio: false
+            });
+
+            video.srcObject = stream;
+
+            message.innerText =
+                "Camera is ready. Take a photo of the incident.";
+
+        } catch (error) {
+
+            message.innerText =
+                "Camera access was denied or is not available.";
+
+            console.error(error);
+        }
+
+    });
+
+
+    // Capture photo
+    capturePhotoButton.addEventListener('click', function () {
+
+        if (!stream) {
+
+            message.innerText =
+                "Please open the camera first.";
+
+            return;
+        }
+
+        const context = canvas.getContext('2d');
+
+        context.drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        canvas.style.display = "block";
+
+        // Convert captured image to file
+        canvas.toBlob(function (blob) {
+
+            const file = new File(
+                [blob],
+                "incident_photo.jpg",
+                {
+                    type: "image/jpeg"
+                }
+            );
+
+            const dataTransfer = new DataTransfer();
+
+            dataTransfer.items.add(file);
+
+            imageInput.files = dataTransfer.files;
+
+            message.innerText =
+                "Photo captured successfully.";
+
+        }, "image/jpeg");
+
+    });
+
+
+    // Retake photo
+    retakePhotoButton.addEventListener('click', function () {
+
+        canvas.style.display = "none";
+
+        imageInput.value = "";
+
+        message.innerText =
+            "You can take another photo.";
+
+    });
+
+
+</script>
+
+{% endblock %}
