@@ -38,7 +38,7 @@ urlpatterns = [
     path(
         'citizen/my-reports/',
         views.my_reports,
-        name='my_reports'
+        name='my_report'
     ),
 
     path(

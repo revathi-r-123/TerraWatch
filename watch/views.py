@@ -240,7 +240,7 @@ def my_reports(request):
 
     return render(
         request,
-        'my_reports.html',
+        'my_report.html',
         {
             'reports': reports
         }
