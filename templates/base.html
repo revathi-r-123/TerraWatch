@@ -4,9 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TerraWatch{% endblock %}</title>
+    <style>
+        :root { --forest:#1d6b45; --forest-dark:#12442d; --mist:#eff8f2; --paper:#fff; --ink:#193127; --muted:#6b7d73; --line:#dcebe1; --shadow:0 8px 24px rgba(25,70,45,.08); }
+        * { box-sizing: border-box; } body { margin:0; color:var(--ink); background:var(--mist); font:15px/1.55 Arial,Helvetica,sans-serif; } a { color:var(--forest); } button,input,textarea,select { font:inherit; }
+        .app-shell { display:flex; min-height:100vh; } .sidebar { width:250px; flex:0 0 250px; padding:26px 16px; color:#e9f8ee; background:linear-gradient(180deg,var(--forest-dark),var(--forest)); }
+        .brand { display:flex; align-items:center; gap:10px; margin:0 10px 35px; color:#fff; font-size:21px; font-weight:700; text-decoration:none; } .brand-mark { display:grid; width:35px; height:35px; place-items:center; border-radius:10px; background:rgba(255,255,255,.14); font-size:19px; }
+        .side-label { margin:0 12px 9px; color:#b8d9c2; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; } .side-nav { display:grid; gap:5px; } .side-nav a { display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:8px; color:#e9f8ee; text-decoration:none; } .side-nav a:hover,.side-nav a.active { color:#fff; background:rgba(255,255,255,.14); } .nav-icon { width:18px; text-align:center; } .side-footer { margin-top:35px; padding-top:18px; border-top:1px solid rgba(255,255,255,.16); }
+        .main-panel { min-width:0; flex:1; } .topbar { display:flex; align-items:center; justify-content:space-between; gap:20px; min-height:72px; padding:0 34px; border-bottom:1px solid var(--line); background:var(--paper); } .topbar-title { margin:0; font-size:17px; font-weight:700; } .topbar-subtitle { margin:0; color:var(--muted); font-size:12px; } .topbar-actions { display:flex; align-items:center; gap:18px; }
+        .notification-button { position:relative; display:grid; width:39px; height:39px; place-items:center; border:1px solid var(--line); border-radius:50%; color:var(--forest); text-decoration:none; font-size:18px; } .notification-dot { position:absolute; top:8px; right:8px; width:7px; height:7px; border:2px solid #fff; border-radius:50%; background:#e89634; }
+        .user-menu { display:flex; align-items:center; gap:9px; } .user-avatar { display:grid; width:35px; height:35px; place-items:center; border-radius:50%; color:var(--forest-dark); background:#dff1e4; font-size:13px; font-weight:700; } .user-name { font-size:13px; font-weight:700; } .user-role { display:block; color:var(--muted); font-size:11px; font-weight:400; }
+        .page-content { max-width:1320px; margin:0 auto; padding:32px 34px 45px; } .page-content h1 { margin-top:0; color:var(--forest-dark); } .page-content h2 { color:var(--forest-dark); } .page-content form { max-width:700px; padding:24px; border:1px solid var(--line); border-radius:12px; background:#fff; box-shadow:var(--shadow); } .page-content input:not([type="file"]),.page-content textarea,.page-content select { width:100%; max-width:520px; margin-top:5px; padding:9px 10px; border:1px solid #c9ddd0; border-radius:7px; } .page-content button,.button { display:inline-block; padding:9px 14px; border:0; border-radius:7px; color:#fff; background:var(--forest); cursor:pointer; text-decoration:none; } .page-content button:hover,.button:hover { background:var(--forest-dark); }
+        @media (max-width:760px) { .app-shell { display:block; } .sidebar { width:100%; padding:14px 16px; } .brand { margin:0 0 14px; } .side-label,.side-footer { display:none; } .side-nav { display:flex; overflow-x:auto; } .side-nav a { flex:0 0 auto; padding:8px 10px; } .topbar { min-height:64px; padding:0 18px; } .topbar-subtitle,.user-menu > div:not(.user-avatar) { display:none; } .topbar-actions { gap:10px; } .page-content { padding:24px 18px 35px; } }
+        .pagination { display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; margin:24px 0; } .pagination a,.pagination .current { min-width:36px; padding:7px 10px; border:1px solid var(--line); border-radius:7px; text-align:center; text-decoration:none; } .pagination a:hover { border-color:var(--forest); background:#e5f4e9; } .pagination .current { border-color:var(--forest); color:#fff; background:var(--forest); font-weight:700; } .pagination .page-summary { width:100%; color:var(--muted); font-size:13px; text-align:center; }
+    </style>
 </head>
 <body>
-    {% block content %}
-    {% endblock %}
+    <div class="app-shell">
+        {% block sidebar %}<aside class="sidebar">
+            {% if request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
+                <a class="brand" href="{% url 'authority_dashboard' %}"><span class="brand-mark">TW</span> TerraWatch</a>
+                <p class="side-label">Authority portal</p>
+                <nav class="side-nav" aria-label="Authority navigation">
+                    <a href="{% url 'authority_dashboard' %}"><span class="nav-icon">&#8962;</span> Dashboard</a>
+                    <a href="{% url 'manage_reports' %}"><span class="nav-icon">&#9638;</span> Reports</a>
+                    <a href="{% url 'inspection' %}"><span class="nav-icon">&#9740;</span> Inspections</a>
+                    <a href="{% url 'maintenance_tasks' %}"><span class="nav-icon">&#10003;</span> Maintenance</a>
+                    <a href="{% url 'compliance' %}"><span class="nav-icon">&#10070;</span> Compliance</a>
+                    <a href="{% url 'analytics' %}"><span class="nav-icon">&#8599;</span> Analytics</a>
+                    <a href="{% url 'notifications' %}"><span class="nav-icon">&#9671;</span> Notifications</a>
+                </nav>
+                <div class="side-footer"><nav class="side-nav" aria-label="Account navigation"><a href="{% url 'logout' %}"><span class="nav-icon">&#8594;</span> Logout</a></nav></div>
+            {% elif request.user.is_authenticated and request.user.userprofile.role == 'worker' %}
+                <a class="brand" href="{% url 'worker_dashboard' %}"><span class="brand-mark">TW</span> TerraWatch</a>
+                <p class="side-label">HKS Worker portal</p>
+                <nav class="side-nav" aria-label="HKS Worker navigation">
+                    <a href="{% url 'worker_dashboard' %}"><span class="nav-icon">&#8962;</span> Dashboard</a>
+                    <a href="{% url 'assigned_tasks' %}"><span class="nav-icon">&#10003;</span> Assigned tasks</a>
+                    <a href="{% url 'attendance' %}"><span class="nav-icon">&#128197;</span> Attendance</a>
+                    <a href="{% url 'worker_availability' %}"><span class="nav-icon">&#9681;</span> Availability</a>
+                    <a href="{% url 'notifications' %}"><span class="nav-icon">&#9671;</span> Notifications</a>
+                </nav>
+                <div class="side-footer"><nav class="side-nav" aria-label="Account navigation"><a href="{% url 'logout' %}"><span class="nav-icon">&#8594;</span> Logout</a></nav></div>
+            {% elif request.user.is_authenticated %}
+            <a class="brand" href="{% url 'citizen_dashboard' %}"><span class="brand-mark">🌿</span> TerraWatch</a>
+            <p class="side-label">Citizen portal</p>
+            <nav class="side-nav" aria-label="Main navigation">
+                <a class="active" href="{% url 'citizen_dashboard' %}"><span class="nav-icon">⌂</span> Dashboard</a>
+                <a href="{% url 'report_issue' %}"><span class="nav-icon">＋</span> Report an issue</a>
+                <a href="{% url 'my_reports' %}"><span class="nav-icon">▤</span> My reports</a>
+                <a href="{% url 'notifications' %}"><span class="nav-icon">♢</span> Notifications</a>
+                <a href="{% url 'feedback' %}"><span class="nav-icon">✦</span> Feedback</a>
+            </nav>
+            <div class="side-footer"><nav class="side-nav" aria-label="Account navigation"><a href="{% url 'logout' %}"><span class="nav-icon">↪</span> Logout</a></nav></div>
+            {% else %}
+                <a class="brand" href="{% url 'home' %}"><span class="brand-mark">TW</span> TerraWatch</a>
+                <p class="side-label">Community portal</p>
+                <nav class="side-nav" aria-label="Site navigation">
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'register' %}">Register</a>
+                </nav>
+            {% endif %}
+        </aside>{% endblock %}
+        <div class="main-panel">
+            {% block topbar %}
+            <header class="topbar">
+                {% if request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
+                    <div>
+                        <p class="topbar-title">Authority workspace</p>
+                        <p class="topbar-subtitle">Review, assign, and resolve community issues.</p>
+                    </div>
+                {% elif request.user.is_authenticated and request.user.userprofile.role == 'worker' %}
+                    <div>
+                        <p class="topbar-title">HKS Worker Dashboard</p>
+                        <p class="topbar-subtitle">View assigned work and keep your availability up to date.</p>
+                    </div>
+                {% else %}
+                    <div>
+                        <p class="topbar-title">Citizen Dashboard</p>
+                        <p class="topbar-subtitle">Help keep your community clean and green.</p>
+                    </div>
+                {% endif %}
+                <div class="topbar-actions">
+                    <a class="notification-button" href="{% url 'notifications' %}" aria-label="View notifications">&#9671;<span class="notification-dot"></span></a>
+                    <div class="user-menu" aria-label="Current user">
+                        <span class="user-avatar">{{ request.user.first_name|slice:":1"|upper }}</span>
+                        <div>
+                            <span class="user-name">{{ request.user.first_name }}</span>
+                            <span class="user-role">
+                                {% if request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
+                                    Authority
+                                {% elif request.user.is_authenticated and request.user.userprofile.role == 'worker' %}
+                                    HKS Worker
+                                {% else %}
+                                    Citizen
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            {% endblock %}
+            <main class="page-content">{% block content %}{% endblock %}</main>
+        </div>
+    </div>
 </body>
 </html>

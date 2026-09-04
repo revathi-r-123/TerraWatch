@@ -1,9 +1,24 @@
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
 
-    # Authentication
+    # =========================================================
+    # HOME
+    # =========================================================
+
+    path(
+        '',
+        views.home,
+        name='home'
+    ),
+
+
+    # =========================================================
+    # AUTHENTICATION
+    # =========================================================
+
     path(
         'login/',
         views.login_view,
@@ -22,7 +37,11 @@ urlpatterns = [
         name='logout'
     ),
 
-    # Citizen
+
+    # =========================================================
+    # CITIZEN
+    # =========================================================
+
     path(
         'citizen/dashboard/',
         views.citizen_dashboard,
@@ -38,7 +57,7 @@ urlpatterns = [
     path(
         'citizen/my-reports/',
         views.my_reports,
-        name='my_report'
+        name='my_reports'
     ),
 
     path(
@@ -47,31 +66,96 @@ urlpatterns = [
         name='report_detail'
     ),
 
-    # Notifications
+
+    # =========================================================
+    # NOTIFICATIONS
+    # =========================================================
+
     path(
         'notifications/',
         views.notifications,
         name='notifications'
     ),
 
-    # Feedback
+
+    # =========================================================
+    # FEEDBACK
+    # =========================================================
+
     path(
         'feedback/',
         views.feedback,
         name='feedback'
     ),
 
-    # Authority
+
+    # =========================================================
+    # AUTHORITY
+    # =========================================================
+
     path(
         'authority/dashboard/',
         views.authority_dashboard,
         name='authority_dashboard'
     ),
 
-    # HKS Worker
+    path(
+        'authority/manage-reports/',
+        views.manage_reports,
+        name='manage_reports'
+    ),
+
+    path(
+        'authority/inspection/',
+        views.inspection,
+        name='inspection'
+    ),
+
+    path(
+        'authority/maintenance-tasks/',
+        views.maintenance_tasks,
+        name='maintenance_tasks'
+    ),
+
+    path(
+        'authority/compliance/',
+        views.compliance,
+        name='compliance'
+    ),
+
+    path(
+        'authority/analytics/',
+        views.analytics,
+        name='analytics'
+    ),
+
+
+    # =========================================================
+    # HKS WORKER
+    # =========================================================
+
     path(
         'worker/dashboard/',
         views.worker_dashboard,
         name='worker_dashboard'
     ),
+
+    path(
+        'worker/assigned-tasks/',
+        views.assigned_tasks,
+        name='assigned_tasks'
+    ),
+
+    path(
+        'worker/attendance/',
+        views.attendance,
+        name='attendance'
+    ),
+
+    path(
+        'worker/availability/',
+        views.worker_availability,
+        name='worker_availability'
+    ),
 ]
+

@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
-
-{% block title %}Authority Dashboard{% endblock %}
-
+{% block title %}Authority Dashboard · TerraWatch{% endblock %}
+{% block sidebar %}<aside class="sidebar"><a class="brand" href="{% url 'authority_dashboard' %}"><span class="brand-mark">TW</span> TerraWatch</a><p class="side-label">Authority portal</p><nav class="side-nav" aria-label="Authority navigation"><a class="active" href="{% url 'authority_dashboard' %}">Overview</a><a href="{% url 'manage_reports' %}">Reports</a><a href="{% url 'inspection' %}">Inspections</a><a href="{% url 'maintenance_tasks' %}">Maintenance</a><a href="{% url 'compliance' %}">Compliance</a><a href="{% url 'analytics' %}">Analytics</a></nav><div class="side-footer"><nav class="side-nav"><a href="{% url 'notifications' %}">Notifications</a><a href="{% url 'logout' %}">Logout</a></nav></div></aside>{% endblock %}
+{% block topbar %}<header class="topbar"><div><p class="topbar-title">Authority workspace</p><p class="topbar-subtitle">Review, assign, and resolve community issues.</p></div><div class="user-menu"><span class="user-avatar">{{ request.user.first_name|slice:':1'|upper }}</span><div><span class="user-name">{{ request.user.first_name|default:'Authority' }}</span><span class="user-role">Authority</span></div></div></header>{% endblock %}
 {% block content %}
-
-<h1>TerraWatch</h1>
-
-<h2>Authority Dashboard</h2>
-
-<p>Welcome Authority</p>
-
-<a href="{% url 'logout' %}">Logout</a>
-
-{% endblock %}
+<style>.authority-hero{margin-bottom:30px}.eyebrow{margin:0 0 7px;color:var(--forest);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.authority-hero h1{margin:0;font-size:30px}.authority-hero p:last-child{margin:7px 0 0;color:var(--muted)}.authority-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.authority-card{position:relative;display:block;min-height:190px;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--paper);box-shadow:var(--shadow);color:var(--ink);text-decoration:none;transition:transform .18s,box-shadow .18s}.authority-card:hover{transform:translateY(-3px);box-shadow:0 13px 28px rgba(25,70,45,.14)}.authority-card-icon{display:grid;width:42px;height:42px;place-items:center;border-radius:11px;background:#e4f4e9;color:var(--forest-dark);font-size:19px}.authority-card h2{margin:20px 0 5px;font-size:18px}.authority-card p{margin:0;color:var(--muted);font-size:13px}.card-go{position:absolute;right:22px;bottom:18px;color:var(--forest);font-size:13px;font-weight:700}@media(max-width:900px){.authority-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.authority-grid{grid-template-columns:1fr}}</style>
+<section class="authority-hero"><p class="eyebrow">Operations centre</p><h1>Good morning, {{ request.user.first_name|default:'Authority' }}.</h1><p>Choose a workspace to keep reports moving from review to resolution.</p></section>
+<section class="authority-grid" aria-label="Authority workspaces">
+<a class="authority-card" href="{% url 'manage_reports' %}"><span class="authority-card-icon">▤</span><h2>Manage reports</h2><p>Review citizen submissions, locations, and their current status.</p><span class="card-go">Open reports →</span></a>
+<a class="authority-card" href="{% url 'inspection' %}"><span class="authority-card-icon">◉</span><h2>Record inspection</h2><p>Capture findings and update the status of a reported issue.</p><span class="card-go">Start inspection →</span></a>
+<a class="authority-card" href="{% url 'maintenance_tasks' %}"><span class="authority-card-icon">✓</span><h2>Maintenance tasks</h2><p>Monitor work assigned to field workers and its progress.</p><span class="card-go">View tasks →</span></a>
+<a class="authority-card" href="{% url 'compliance' %}"><span class="authority-card-icon">▣</span><h2>Landowner compliance</h2><p>Track notices, deadlines, and compliance outcomes.</p><span class="card-go">Open compliance →</span></a>
+<a class="authority-card" href="{% url 'analytics' %}"><span class="authority-card-icon">↗</span><h2>Analytics</h2><p>See issue trends and community response progress.</p><span class="card-go">View analytics →</span></a>
+<a class="authority-card" href="{% url 'notifications' %}"><span class="authority-card-icon">◌</span><h2>Notifications</h2><p>Keep up with report updates and operational activity.</p><span class="card-go">Open notifications →</span></a>
+</section>{% endblock %}

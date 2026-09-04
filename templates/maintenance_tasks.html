@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Maintenance Tasks</h1>
+
+<p>Manage maintenance tasks assigned to HKS workers.</p>
+
+<table border="1">
+    <tr>
+        <th>Task ID</th>
+        <th>Report</th>
+        <th>Task Type</th>
+        <th>Assigned Worker</th>
+        <th>Status</th>
+    </tr>
+
+    {% for task in tasks %}
+    <tr>
+        <td>{{ task.id }}</td>
+        <td>{{ task.report.id }}</td>
+        <td>{{ task.task_type }}</td>
+        <td>{{ task.worker }}</td>
+        <td>{{ task.status }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No maintenance tasks available.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% include 'includes/pagination.html' with page_obj=tasks %}
+
+<br>
+
+<a href="{% url 'authority_dashboard' %}">Back to Dashboard</a>
+
+{% endblock %}

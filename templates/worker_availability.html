@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Worker Availability{% endblock %}
+
+{% block content %}
+
+<h1>TerraWatch</h1>
+
+<h2>Worker Availability</h2>
+
+<p>Update your current availability status.</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Availability:</label>
+
+    <select name="availability" required>
+        <option value="available"
+            {% if profile.availability == 'available' %}selected{% endif %}>
+            Available
+        </option>
+
+        <option value="busy"
+            {% if profile.availability == 'busy' %}selected{% endif %}>
+            Busy
+        </option>
+
+        <option value="off_duty"
+            {% if profile.availability == 'off_duty' %}selected{% endif %}>
+            Off Duty
+        </option>
+    </select>
+
+    <br><br>
+
+    <button type="submit">Update Availability</button>
+</form>
+
+<br>
+
+<p>
+    Current Status:
+    <strong>{{ profile.get_availability_display }}</strong>
+</p>
+
+<br>
+
+<a href="{% url 'worker_dashboard' %}">Back to Dashboard</a>
+
+{% endblock %}

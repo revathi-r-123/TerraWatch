@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>.workspace-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:24px}.workspace-head h1{margin:0;font-size:28px}.workspace-head p{margin:6px 0 0;color:var(--muted)}.back-action{padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:#fff;text-decoration:none;font-size:13px;font-weight:700}.data-panel{overflow:hidden;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow)}.table-scroll{overflow-x:auto}.authority-table{width:100%;min-width:850px;border-collapse:collapse}.authority-table th,.authority-table td{padding:15px 18px;border-bottom:1px solid #edf4ef;text-align:left;vertical-align:top}.authority-table th{background:#f8fcf9;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase}.authority-table td{font-size:13px}.report-title{font-weight:700}.report-description{max-width:280px;color:var(--muted)}.status-chip{display:inline-block;padding:4px 9px;border-radius:999px;background:#e4f4e9;color:var(--forest-dark);font-size:12px;font-weight:700}</style>
+<section class="workspace-head"><div><h1>Manage reports</h1><p>Review every issue reported by citizens in one workspace.</p></div><a class="back-action" href="{% url 'authority_dashboard' %}">← Authority dashboard</a></section>
+
+<section class="data-panel"><div class="table-scroll"><table class="authority-table">
+    <tr>
+        <th>Report ID</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Location</th>
+        <th>Status</th>
+        <th>Reported Date</th>
+    </tr>
+
+    {% for report in reports %}
+    <tr>
+        <td>{{ report.id }}</td>
+        <td class="report-title">{{ report.title }}</td>
+        <td class="report-description">{{ report.description }}</td>
+        <td>{{ report.location }}</td>
+        <td><span class="status-chip">{{ report.status }}</span></td>
+        <td>{{ report.reported_date }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No reports available.</td>
+    </tr>
+    {% endfor %}
+</table></div></section>
+
+{% include 'includes/pagination.html' with page_obj=reports %}
+
+{% endblock %}

@@ -10,30 +10,58 @@
 
 {% if notifications %}
 
-    {% for notification in notifications %}
 
-        <p>
-            {{ notification.message }}
-        </p>
+{% for notification in notifications %}
 
-        <small>
-            {{ notification.created_at }}
-        </small>
+    <p>
+        {{ notification.message }}
+    </p>
 
-        <hr>
+    <small>
+        {{ notification.created_at }}
+    </small>
 
-    {% endfor %}
+    <hr>
+
+{% endfor %}
+
 
 {% else %}
 
-    <p>No notifications available.</p>
+
+<p>No notifications available.</p>
+
 
 {% endif %}
 
+{% include 'includes/pagination.html' with page_obj=notifications %}
+
 <br>
+
+{% if role == 'citizen' %}
+
 
 <a href="{% url 'citizen_dashboard' %}">
     Back to Dashboard
 </a>
+
+
+{% elif role == 'authority' %}
+
+
+<a href="{% url 'authority_dashboard' %}">
+    Back to Dashboard
+</a>
+
+
+{% elif role == 'worker' %}
+
+
+<a href="{% url 'worker_dashboard' %}">
+    Back to Dashboard
+</a>
+
+
+{% endif %}
 
 {% endblock %}

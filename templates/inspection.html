@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Inspection</h1>
+
+<p>Record and manage field inspections.</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Report ID:</label>
+    <input type="number" name="report_id" required>
+    <br><br>
+
+    <label>Inspection Status:</label>
+    <select name="inspection_status">
+        <option value="verified">Verified</option>
+        <option value="not_verified">Not Verified</option>
+        <option value="requires_action">Requires Action</option>
+    </select>
+    <br><br>
+
+    <label>Inspection Remarks:</label>
+    <br>
+    <textarea name="remarks" rows="5" cols="40"></textarea>
+    <br><br>
+
+    <button type="submit">Submit Inspection</button>
+</form>
+
+<br>
+
+<a href="{% url 'authority_dashboard' %}">Back to Dashboard</a>
+
+{% endblock %}

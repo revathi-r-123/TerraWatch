@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance{% endblock %}
+
+{% block content %}
+
+<h1>TerraWatch</h1>
+
+<h2>HKS Worker Attendance</h2>
+
+<p>Mark your daily attendance.</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Attendance Status:</label>
+
+    <select name="status" required>
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+    </select>
+
+    <br><br>
+
+    <button type="submit">Mark Attendance</button>
+</form>
+
+<br>
+
+<h3>My Attendance</h3>
+
+<table border="1">
+    <tr>
+        <th>Date</th>
+        <th>Status</th>
+    </tr>
+
+    {% for record in attendance_records %}
+    <tr>
+        <td>{{ record.date }}</td>
+        <td>{{ record.status }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="2">No attendance records available.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% include 'includes/pagination.html' with page_obj=attendance_records %}
+
+<br>
+
+<a href="{% url 'worker_dashboard' %}">Back to Dashboard</a>
+
+{% endblock %}

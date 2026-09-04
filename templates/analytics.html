@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>TerraWatch Analytics</h1>
+
+<p>View statistics related to reported environmental issues.</p>
+
+<h2>Report Statistics</h2>
+
+<ul>
+    <li>Total Reports: {{ total_reports }}</li>
+    <li>Submitted Reports: {{ submitted_reports }}</li>
+    <li>Verified Reports: {{ verified_reports }}</li>
+    <li>Resolved Reports: {{ resolved_reports }}</li>
+</ul>
+
+<h2>Issue Categories</h2>
+
+<ul>
+    <li>Illegal Waste Dumping: {{ waste_reports }}</li>
+    <li>Land Clearance: {{ land_reports }}</li>
+    <li>Stagnant Water: {{ water_reports }}</li>
+</ul>
+
+<br>
+
+<a href="{% url 'authority_dashboard' %}">Back to Dashboard</a>
+
+{% endblock %}

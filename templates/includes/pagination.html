@@ -1,0 +1,4 @@
+<nav class="pagination" aria-label="Pagination"><button type="button">Previous</button><span></span><button type="button">Next</button></nav>
+<script>
+(() => { const pager = document.currentScript.previousElementSibling; const container = pager.previousElementSibling; const items = container && container.querySelectorAll ? [...container.querySelectorAll('tbody tr')] : []; const size = 10; const pages = Math.ceil(items.length / size); if (pages < 2) { pager.hidden = true; return; } let current = 1; const buttons = pager.querySelectorAll('button'); const label = pager.querySelector('span'); function draw() { items.forEach((item, i) => item.hidden = i < (current - 1) * size || i >= current * size); buttons[0].disabled = current === 1; buttons[1].disabled = current === pages; label.textContent = `Page ${current} of ${pages}`; } buttons[0].onclick = () => { current--; draw(); }; buttons[1].onclick = () => { current++; draw(); }; draw(); })();
+</script>
