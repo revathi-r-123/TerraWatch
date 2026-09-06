@@ -29,7 +29,7 @@
 
 <h3>My Attendance</h3>
 
-<table border="1">
+<div class="table-card"><div class="table-scroll"><table class="data-table">
     <tr>
         <th>Date</th>
         <th>Status</th>
@@ -42,10 +42,10 @@
     </tr>
     {% empty %}
     <tr>
-        <td colspan="2">No attendance records available.</td>
+        <td class="empty-row" colspan="2">No attendance records available.</td>
     </tr>
     {% endfor %}
-</table>
+</table></div></div>
 
 {% include 'includes/pagination.html' with page_obj=attendance_records %}
 

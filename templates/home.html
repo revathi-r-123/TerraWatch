@@ -42,8 +42,16 @@
     .role-number { margin: 0 0 18px; color: #1d6b45; font-size: 12px; font-weight: 700; letter-spacing: .08em; }
     .role-card h3 { margin: 0 0 9px; color: #12442d; font-size: 20px; }
     .role-card p { margin: 0; color: #61766a; }
+    .about-terrawatch { max-width: 1180px; margin: 0 auto; padding: 0 32px 78px; }
+    .about-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 18px; }
+    .about-block { padding: 25px 26px; border: 1px solid #d8e9dd; border-radius: 14px; background: #fff; }
+    .about-block h3 { margin: 0 0 9px; color: #12442d; font-size: 19px; }
+    .about-block p { margin: 0; color: #61766a; }
+    .about-role-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .about-role-list li { padding-left: 17px; border-left: 3px solid #b9d9c2; color: #385744; }
+    .about-role-list strong { color: #12442d; }
     .home-footer { padding-bottom: 30px; color: #718276; font-size: 12px; }
-    @media (max-width: 800px) { .home-hero { grid-template-columns: 1fr; gap: 38px; padding-top: 45px; padding-bottom: 55px; } .role-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 800px) { .home-hero { grid-template-columns: 1fr; gap: 38px; padding-top: 45px; padding-bottom: 55px; } .role-grid, .about-grid { grid-template-columns: 1fr; } }
     @media (max-width: 560px) { .home-nav, .home-hero, .roles, .home-footer { padding-left: 20px; padding-right: 20px; } .brand { font-size: 20px; } .hero-panel, .role-card { padding: 23px; } }
 </style>
 
@@ -100,6 +108,27 @@
                     <p class="role-number">03 / HKS WORKER</p>
                     <h3>HKS Worker</h3>
                     <p>View assigned maintenance tasks, mark attendance, and update availability.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="about-terrawatch" aria-labelledby="about-title">
+            <div class="section-heading">
+                <h2 id="about-title">How TerraWatch works</h2>
+                <p>TerraWatch is a shared environmental reporting platform for panchayats and municipalities. It connects residents with the local teams responsible for reviewing, responding to, and resolving community issues.</p>
+            </div>
+            <div class="about-grid">
+                <article class="about-block">
+                    <h3>For local government</h3>
+                    <p>Panchayat or municipality administrators can turn community reports into organised action, monitor progress, coordinate field work, and maintain a clear record of environmental service delivery.</p>
+                </article>
+                <article class="about-block">
+                    <h3>Who does what?</h3>
+                    <ul class="about-role-list">
+                        <li><strong>Citizens:</strong> report local environmental problems and follow their progress.</li>
+                        <li><strong>Authorities:</strong> verify reports, plan inspections, assign work, and track resolution.</li>
+                        <li><strong>HKS workers:</strong> carry out assigned maintenance work, record attendance, and update availability.</li>
+                    </ul>
                 </article>
             </div>
         </section>

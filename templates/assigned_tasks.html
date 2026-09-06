@@ -10,7 +10,7 @@
 
 <p>View maintenance tasks assigned to you.</p>
 
-<table border="1">
+<div class="table-card"><div class="table-scroll"><table class="data-table">
 
 <tr>
     <th>Task ID</th>
@@ -50,7 +50,7 @@
 {% empty %}
 
 <tr>
-    <td colspan="6">
+    <td class="empty-row" colspan="6">
         No tasks have been assigned to you.
     </td>
 </tr>
@@ -58,7 +58,7 @@
 {% endfor %}
 
 
-</table>
+</table></div></div>
 
 {% include 'includes/pagination.html' with page_obj=tasks %}
 
