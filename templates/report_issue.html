@@ -13,19 +13,32 @@
 
 {% csrf_token %}
 
-<label>Issue Title:</label>
-<input type="text" name="title" required>
+<label for="issue_type">Issue Type:</label>
+<select name="issue_type" id="issue_type" required>
+    <option value="" disabled {% if not selected_issue_type %}selected{% endif %}>
+        Select the issue type
+    </option>
+    <option value="Land Clearance" {% if selected_issue_type == 'Land Clearance' %}selected{% endif %}>
+        Overgrown Vegetation / Land Clearance
+    </option>
+    <option value="Waste Dumping" {% if selected_issue_type == 'Waste Dumping' %}selected{% endif %}>
+        Illegal Waste Dumping
+    </option>
+    <option value="Stagnant Water" {% if selected_issue_type == 'Stagnant Water' %}selected{% endif %}>
+        Stagnant Water Removal
+    </option>
+</select>
 
 <br><br>
 
-<label>Description:</label>
+<label for="description">Additional Details (optional):</label>
 <br>
-<textarea name="description" rows="5" required></textarea>
+<textarea name="description" id="description" rows="5" placeholder="For example, the vegetation is blocking the footpath.">{{ description }}</textarea>
 
 <br><br>
 
-<label>Location:</label>
-<input type="text" name="location" required>
+<label for="location">Location:</label>
+<input type="text" name="location" id="location" value="{{ location }}" required>
 
 <br><br>
 

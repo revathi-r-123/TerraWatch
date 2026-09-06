@@ -272,15 +272,35 @@ def report_issue(request):
     if request.method == 'POST':
 
         issue_type = request.POST.get('issue_type')
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        location = request.POST.get('location')
+        description = request.POST.get('description', '').strip()
+        location = request.POST.get('location', '').strip()
         image = request.FILES.get('image')
+
+        issue_types = dict(Report.ISSUE_TYPE_CHOICES)
+
+        if issue_type not in issue_types or not location:
+
+            messages.error(
+                request,
+                'Please choose an issue type and enter the location.'
+            )
+
+            return render(
+                request,
+                'report_issue.html',
+                {
+                    'selected_issue_type': issue_type,
+                    'description': description,
+                    'location': location
+                }
+            )
 
         Report.objects.create(
             citizen=request.user,
             issue_type=issue_type,
-            title=title,
+            # The selected issue type is the report title; citizens do not
+            # need to invent a separate title for a structured report.
+            title=issue_types[issue_type],
             description=description,
             location=location,
             image=image

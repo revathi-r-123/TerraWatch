@@ -56,8 +56,8 @@ class Report(models.Model):
 
     ISSUE_TYPE_CHOICES = [
         ('Waste Dumping', 'Illegal Waste Dumping'),
-        ('Land Clearance', 'Land Clearance'),
-        ('Stagnant Water', 'Stagnant Water'),
+        ('Land Clearance', 'Overgrown Vegetation / Land Clearance'),
+        ('Stagnant Water', 'Stagnant Water Removal'),
     ]
 
     STATUS_CHOICES = [
@@ -88,10 +88,11 @@ class Report(models.Model):
     )
 
     title = models.CharField(
-        max_length=200
+        max_length=200,
+        blank=True
     )
 
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
     location = models.CharField(
         max_length=255
