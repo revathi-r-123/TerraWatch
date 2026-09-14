@@ -39,6 +39,41 @@ urlpatterns = [
 
 
     # =========================================================
+    # LOCAL-BODY ADMIN
+    # =========================================================
+
+    path(
+        'admin/dashboard/',
+        views.admin_dashboard,
+        name='admin_dashboard'
+    ),
+
+    path(
+        'admin/authority/',
+        views.authority_management,
+        name='authority_management'
+    ),
+
+    path(
+        'admin/hks/',
+        views.hks_management,
+        name='hks_management'
+    ),
+
+    path(
+        'admin/attendance/',
+        views.attendance_monitoring,
+        name='attendance_monitoring'
+    ),
+
+    path(
+        'admin/tasks/',
+        views.task_monitoring,
+        name='task_monitoring'
+    ),
+
+
+    # =========================================================
     # CITIZEN
     # =========================================================
 

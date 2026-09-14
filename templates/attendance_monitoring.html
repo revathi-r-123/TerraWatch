@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Monitoring · TerraWatch{% endblock %}
+{% block sidebar %}{% include 'includes/admin_sidebar.html' %}{% endblock %}
+{% block topbar %}<header class="topbar"><div><p class="topbar-title">Attendance Monitoring</p><p class="topbar-subtitle">Daily HKS worker attendance records.</p></div><div class="user-menu"><span class="user-avatar">A</span><div><span class="user-name">{{ request.user.first_name|default:request.user.username }}</span><span class="user-role">Admin</span></div></div></header>{% endblock %}
+{% block content %}
+<h1>Attendance Monitoring</h1><p>Attendance is recorded separately from worker task availability.</p>
+<div class="table-card"><div class="table-scroll"><table class="data-table"><thead><tr><th>Worker name</th><th>Date</th><th>Attendance</th></tr></thead><tbody>{% for record in attendance_records %}<tr><td>{{ record.worker.get_full_name|default:record.worker.username }}</td><td>{{ record.date }}</td><td>{{ record.status }}</td></tr>{% empty %}<tr><td class="empty-row" colspan="3">No attendance records available.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

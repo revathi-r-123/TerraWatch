@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Task Monitoring · TerraWatch{% endblock %}
+{% block sidebar %}{% include 'includes/admin_sidebar.html' %}{% endblock %}
+{% block topbar %}<header class="topbar"><div><p class="topbar-title">Task Monitoring</p><p class="topbar-subtitle">Monitor maintenance work assigned by Authority users.</p></div><div class="user-menu"><span class="user-avatar">A</span><div><span class="user-name">{{ request.user.first_name|default:request.user.username }}</span><span class="user-role">Admin</span></div></div></header>{% endblock %}
+{% block content %}
+<h1>Task Monitoring</h1><p>Admin monitoring is read-only; task assignment and worker updates remain with the existing Authority and HKS workflows.</p>
+<div class="table-card"><div class="table-scroll"><table class="data-table"><thead><tr><th>Task</th><th>Report</th><th>Assigned worker</th><th>Status</th><th>Date</th></tr></thead><tbody>{% for task in tasks %}<tr><td>{{ task.task_type }}</td><td>#{{ task.report.id }}</td><td>{% if task.worker %}{{ task.worker.get_full_name|default:task.worker.username }}{% else %}Unassigned{% endif %}</td><td>{{ task.status }}</td><td>{{ task.assigned_date|date:'Y-m-d' }}</td></tr>{% empty %}<tr><td class="empty-row" colspan="5">No maintenance tasks available.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

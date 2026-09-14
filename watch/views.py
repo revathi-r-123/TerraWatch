@@ -3,7 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.utils import timezone
+from functools import wraps
 
 from .models import (
     UserProfile,
@@ -136,7 +138,7 @@ def login_view(request):
         # SUPERUSER / ADMIN
         if user.is_superuser:
 
-            return redirect('/admin/')
+            return redirect('admin_dashboard')
 
         # GET USER PROFILE
         try:
@@ -191,6 +193,203 @@ def login_view(request):
     return render(
         request,
         'login_page.html'
+    )
+
+
+def admin_required(view_func):
+
+    @wraps(view_func)
+    @login_required
+    def wrapped_view(request, *args, **kwargs):
+
+        if not request.user.is_superuser:
+
+            messages.error(
+                request,
+                'Access denied.'
+            )
+
+            return redirect('login')
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapped_view
+
+
+def _create_managed_account(request, role):
+
+    username = request.POST.get('username', '').strip()
+    email = request.POST.get('email', '').strip()
+    full_name = request.POST.get('full_name', '').strip()
+    phone = request.POST.get('phone', '').strip()
+    password = request.POST.get('password', '')
+    confirm_password = request.POST.get('confirm_password', '')
+
+    if not username or not password:
+        return 'Username and password are required.'
+
+    if password != confirm_password:
+        return 'Passwords do not match.'
+
+    if User.objects.filter(username=username).exists():
+        return 'Username already exists.'
+
+    if email and User.objects.filter(email=email).exists():
+        return 'Email already exists.'
+
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        password=password,
+        first_name=full_name
+    )
+
+    UserProfile.objects.create(
+        user=user,
+        role=role,
+        phone=phone
+    )
+
+    return None
+
+
+@admin_required
+def admin_dashboard(request):
+
+    total_reports = Report.objects.count()
+    pending_reports = Report.objects.exclude(
+        status__in=['Resolved', 'Rejected']
+    ).count()
+    total_authorities = UserProfile.objects.filter(
+        role='authority'
+    ).count()
+    total_workers = UserProfile.objects.filter(
+        role='worker'
+    ).count()
+    present_workers = Attendance.objects.filter(
+        date=timezone.localdate(),
+        status='Present',
+        worker__userprofile__role='worker'
+    ).count()
+    available_workers = UserProfile.objects.filter(
+        role='worker',
+        availability='available',
+        user__is_active=True
+    ).count()
+    completed_tasks = MaintenanceTask.objects.filter(
+        status='Completed'
+    ).count()
+
+    return render(
+        request,
+        'admin_dashboard.html',
+        {
+            'total_reports': total_reports,
+            'pending_reports': pending_reports,
+            'total_authorities': total_authorities,
+            'total_workers': total_workers,
+            'present_workers': present_workers,
+            'available_workers': available_workers,
+            'completed_tasks': completed_tasks
+        }
+    )
+
+
+@admin_required
+def authority_management(request):
+
+    if request.method == 'POST':
+
+        if request.POST.get('action') == 'toggle':
+            authority = get_object_or_404(
+                User,
+                id=request.POST.get('user_id'),
+                userprofile__role='authority'
+            )
+            authority.is_active = not authority.is_active
+            authority.save(update_fields=['is_active'])
+            messages.success(request, 'Authority account status updated.')
+
+        else:
+            error = _create_managed_account(request, 'authority')
+            if error:
+                messages.error(request, error)
+            else:
+                messages.success(request, 'Authority account created successfully.')
+
+        return redirect('authority_management')
+
+    authority_users = UserProfile.objects.filter(
+        role='authority'
+    ).select_related('user').order_by('user__first_name', 'user__username')
+
+    return render(
+        request,
+        'authority_management.html',
+        {'authority_users': authority_users}
+    )
+
+
+@admin_required
+def hks_management(request):
+
+    if request.method == 'POST':
+
+        error = _create_managed_account(request, 'worker')
+        if error:
+            messages.error(request, error)
+        else:
+            messages.success(request, 'HKS worker account created successfully.')
+
+        return redirect('hks_management')
+
+    hks_workers = UserProfile.objects.filter(
+        role='worker'
+    ).select_related('user').order_by('user__first_name', 'user__username')
+
+    for worker in hks_workers:
+        worker.current_task = worker.user.assigned_tasks.filter(
+            status__in=['Assigned', 'In Progress']
+        ).order_by('-assigned_date').first()
+        worker.latest_attendance = worker.user.attendance_records.order_by(
+            '-date'
+        ).first()
+
+    return render(
+        request,
+        'hks_management.html',
+        {'hks_workers': hks_workers}
+    )
+
+
+@admin_required
+def attendance_monitoring(request):
+
+    attendance_records = Attendance.objects.filter(
+        worker__userprofile__role='worker'
+    ).select_related('worker').order_by('-date', 'worker__first_name')
+
+    return render(
+        request,
+        'attendance_monitoring.html',
+        {'attendance_records': attendance_records}
+    )
+
+
+@admin_required
+def task_monitoring(request):
+
+    tasks = MaintenanceTask.objects.select_related(
+        'report',
+        'worker'
+    ).filter(
+        Q(worker__isnull=True) | Q(worker__userprofile__role='worker')
+    ).order_by('-assigned_date')
+
+    return render(
+        request,
+        'task_monitoring.html',
+        {'tasks': tasks}
     )
 
 
@@ -674,24 +873,31 @@ def compliance(request):
 @login_required
 def analytics(request):
 
-    try:
+    if not request.user.is_superuser:
 
-        profile = UserProfile.objects.get(
-            user=request.user
-        )
+        try:
 
-        if profile.role != 'authority':
+            profile = UserProfile.objects.get(
+                user=request.user
+            )
+
+            if profile.role != 'authority':
+
+                messages.error(
+                    request,
+                    'Access denied.'
+                )
+
+                return redirect('login')
+
+        except UserProfile.DoesNotExist:
 
             messages.error(
                 request,
-                'Access denied.'
+                'User profile not found.'
             )
 
             return redirect('login')
-
-    except UserProfile.DoesNotExist:
-
-        return redirect('login')
 
     total_reports = Report.objects.count()
 

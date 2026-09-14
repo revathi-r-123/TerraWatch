@@ -4,60 +4,347 @@
 
 {% block content %}
 
-<h1>TerraWatch</h1>
+<style>
+    .register-shell {
+        max-width: 760px;
+        margin: 40px auto;
+        padding: 28px 22px;
+        background: #ffffff;
+        border: 1px solid #dfe9e3;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(18, 52, 38, 0.08);
+    }
 
-<h2>Citizen Registration</h2>
+    .register-page-header {
+        margin-bottom: 22px;
+        text-align: center;
+    }
 
-{% if error %}
-    <p>{{ error }}</p>
-{% endif %}
+    .register-page-header h1 {
+        margin: 0 0 6px;
+        color: #1d6b45;
+        font-size: 2.2rem;
+    }
 
-{% if success %}
-    <p>{{ success }}</p>
-{% endif %}
+    .register-page-header h2 {
+        margin: 0;
+        color: #2a3d34;
+    }
 
-<form method="POST">
+    .progress-steps {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 22px 0 24px;
+    }
 
-    {% csrf_token %}
+    .step-pill {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 999px;
+        font-weight: 600;
+        border: 1px solid #dfe9e3;
+        background: #f8fbf9;
+        color: #49665d;
+        transition: all 0.25s ease;
+    }
 
-    <label>Full Name:</label>
-    <input type="text" name="full_name" required>
+    .step-pill.is-active {
+        background: #1d6b45;
+        color: #fff;
+        border-color: #1d6b45;
+        box-shadow: 0 8px 18px rgba(29, 107, 69, 0.18);
+    }
 
-    <br><br>
+    .step-pill.is-complete {
+        background: #eaf6ed;
+        border-color: #b9d9c2;
+        color: #1d6b45;
+    }
 
-    <label>Username:</label>
-    <input type="text" name="username" required>
+    .step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.22);
+        border: 1px solid currentColor;
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
 
-    <br><br>
+    .register-form {
+        margin-top: 12px;
+    }
 
-    <label>Email:</label>
-    <input type="email" name="email" required>
+    .step-label {
+        margin-bottom: 14px;
+        color: #416759;
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
 
-    <br><br>
+    .register-form fieldset {
+        border: 1px solid #e4ece7;
+        border-radius: 14px;
+        padding: 20px 18px 10px;
+        background: #fbfefc;
+    }
 
-    <label>Phone Number:</label>
-    <input type="tel" name="phone" required>
+    .register-form legend {
+        padding: 0 8px;
+        font-weight: 700;
+        color: #234f3f;
+    }
 
-    <br><br>
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+        margin-bottom: 10px;
+    }
 
-    <label>Password:</label>
-    <input type="password" name="password" required>
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
 
-    <br><br>
+    .field-group label {
+        font-weight: 600;
+        color: #234f3f;
+    }
 
-    <label>Confirm Password:</label>
-    <input type="password" name="confirm_password" required>
+    .field-group input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #d2dfd6;
+        border-radius: 10px;
+        font-size: 1rem;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
 
-    <br><br>
+    .field-group input:focus {
+        outline: none;
+        border-color: #1d6b45;
+        box-shadow: 0 0 0 3px rgba(29, 107, 69, 0.12);
+    }
 
-    <button type="submit">Register</button>
+    .button-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 22px;
+    }
 
-</form>
+    .button-row button {
+        border: none;
+        border-radius: 10px;
+        padding: 12px 18px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+    }
 
-<p>
-    Already have an account?
-    <a href="{% url 'login' %}">Login</a>
-</p>
+    .button-row button:hover {
+        transform: translateY(-1px);
+    }
+
+    .button-row button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: #edf4ef;
+        color: #234f3f;
+    }
+
+    .btn-primary {
+        background: #1d6b45;
+        color: #fff;
+    }
+
+    .login-link {
+        margin-top: 18px;
+        text-align: center;
+        color: #335f51;
+    }
+
+    @media (max-width: 640px) {
+        .progress-steps {
+            grid-template-columns: 1fr;
+        }
+
+        .button-row {
+            flex-direction: column-reverse;
+        }
+
+        .button-row button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="register-shell">
+    <div class="register-page-header">
+        <h1>TerraWatch</h1>
+        <h2>Citizen Registration</h2>
+    </div>
+
+    {% if error %}
+        <p class="error-message">{{ error }}</p>
+    {% endif %}
+
+    {% if success %}
+        <p class="success-message">{{ success }}</p>
+    {% endif %}
+
+    <div class="progress-steps" aria-label="Registration progress">
+        <div class="step-pill is-active" data-step-pill="0">
+            <span class="step-number">1</span>
+            <span>Account</span>
+        </div>
+        <div class="step-pill" data-step-pill="1">
+            <span class="step-number">2</span>
+            <span>Security</span>
+        </div>
+    </div>
+
+    <form method="POST" class="register-form">
+        {% csrf_token %}
+
+        <p id="registration-step" class="step-label" aria-live="polite">Step 1 of 2</p>
+
+        <fieldset data-step="0">
+            <legend>Account details</legend>
+
+            <div class="form-row">
+                <div class="field-group">
+                    <label for="full_name">Full Name:</label>
+                    <input id="full_name" type="text" name="full_name" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="username">Username:</label>
+                    <input id="username" type="text" name="username" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="email">Email:</label>
+                    <input id="email" type="email" name="email" required>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset data-step="1" hidden>
+            <legend>Contact and security</legend>
+
+            <div class="form-row">
+                <div class="field-group">
+                    <label for="phone">Phone Number:</label>
+                    <input id="phone" type="tel" name="phone" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="password">Password:</label>
+                    <input id="password" type="password" name="password" required>
+                </div>
+
+                <div class="field-group">
+                    <label for="confirm_password">Confirm Password:</label>
+                    <input id="confirm_password" type="password" name="confirm_password" required>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="button-row">
+            <button type="button" id="previous-step" class="btn-secondary" hidden>Back</button>
+            <button type="button" id="next-step" class="btn-primary">Next</button>
+            <button type="submit" id="register-submit" class="btn-primary" hidden>Register</button>
+        </div>
+    </form>
+
+    <p class="login-link">
+        Already have an account?
+        <a href="{% url 'login' %}">Login</a>
+    </p>
+</div>
+
+<script>
+    (() => {
+        const steps = [...document.querySelectorAll('[data-step]')];
+        const stepPills = [...document.querySelectorAll('[data-step-pill]')];
+        const stepLabel = document.getElementById('registration-step');
+        const previousButton = document.getElementById('previous-step');
+        const nextButton = document.getElementById('next-step');
+        const submitButton = document.getElementById('register-submit');
+        let currentStep = 0;
+
+        function validateCurrentStep() {
+            const fields = steps[currentStep].querySelectorAll('input');
+            return [...fields].every(field => field.reportValidity());
+        }
+
+        function showStep(step) {
+            steps.forEach((element, index) => {
+                element.hidden = index !== step;
+            });
+
+            stepPills.forEach((pill, index) => {
+                pill.classList.toggle('is-active', index === step);
+                pill.classList.toggle('is-complete', index < step);
+            });
+
+            stepLabel.textContent = `Step ${step + 1} of ${steps.length}`;
+            previousButton.hidden = step === 0;
+            nextButton.hidden = step === steps.length - 1;
+            submitButton.hidden = step !== steps.length - 1;
+        }
+
+        nextButton.addEventListener('click', () => {
+            if (!validateCurrentStep()) {
+                return;
+            }
+
+            currentStep = Math.min(currentStep + 1, steps.length - 1);
+            showStep(currentStep);
+        });
+
+        previousButton.addEventListener('click', () => {
+            currentStep = Math.max(currentStep - 1, 0);
+            showStep(currentStep);
+        });
+
+        stepPills.forEach((pill) => {
+            pill.addEventListener('click', () => {
+                const targetStep = Number(pill.dataset.stepPill);
+
+                if (targetStep < currentStep) {
+                    currentStep = targetStep;
+                    showStep(currentStep);
+                    return;
+                }
+
+                if (targetStep === currentStep + 1 && validateCurrentStep()) {
+                    currentStep = targetStep;
+                    showStep(currentStep);
+                }
+            });
+        });
+
+        showStep(currentStep);
+    })();
+</script>
 
 {% endblock %}
 

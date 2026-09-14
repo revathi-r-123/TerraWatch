@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard · TerraWatch{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+    <a class="brand" href="{% url 'admin_dashboard' %}"><span class="brand-mark">TW</span> TerraWatch</a>
+    <p class="side-label">Local-body Admin</p>
+    <nav class="side-nav" aria-label="Admin navigation">
+        <a class="active" href="{% url 'admin_dashboard' %}">Dashboard</a>
+        <a href="{% url 'authority_management' %}">Authority Management</a>
+        <a href="{% url 'hks_management' %}">HKS Workforce</a>
+        <a href="{% url 'attendance_monitoring' %}">Attendance</a>
+        <a href="{% url 'task_monitoring' %}">Tasks</a>
+        <a href="{% url 'analytics' %}">Reports / Analytics</a>
+    </nav>
+    <div class="side-footer"><nav class="side-nav"><a href="{% url 'logout' %}">Logout</a></nav></div>
+</aside>
+{% endblock %}
+
+{% block topbar %}
+<header class="topbar"><div><p class="topbar-title">Panchayat Admin ({{ request.user.get_full_name|default:request.user.username }})</p><p class="topbar-subtitle">Panchayat / Municipality operations overview.</p></div><div class="user-menu"><span class="user-avatar">A</span><div><span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span><span class="user-role">Admin</span></div></div></header>
+{% endblock %}
+
+{% block content %}
+<style>
+    .admin-header { margin-bottom: 24px; }
+    .admin-header h1 { margin-bottom: 5px; }
+    .admin-header p { margin: 0; color: var(--muted); }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 28px; }
+    .metric-card { padding: 19px; border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
+    .metric-label { display: block; color: var(--muted); font-size: 12px; }
+    .metric-value { display: block; margin-top: 8px; color: var(--forest-dark); font-size: 28px; font-weight: 700; }
+    .quick-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+    .quick-link { padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--forest-dark); text-decoration: none; box-shadow: var(--shadow); }
+    .quick-link strong { display: block; margin-bottom: 4px; }
+    .quick-link span { color: var(--muted); font-size: 13px; }
+    .quick-link:hover { border-color: #9ac7a7; background: #f7fcf8; }
+    @media (max-width: 900px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) { .metric-grid, .quick-links { grid-template-columns: 1fr; } }
+</style>
+<section class="admin-header"><h1>Good morning, {{ request.user.first_name|default:request.user.username }}.</h1><p>Monitor reports, local teams, attendance, and field work from one place.</p></section>
+<section class="metric-grid" aria-label="Admin metrics">
+    <article class="metric-card"><span class="metric-label">Total Reports</span><strong class="metric-value">{{ total_reports }}</strong></article>
+    <article class="metric-card"><span class="metric-label">Pending Reports</span><strong class="metric-value">{{ pending_reports }}</strong></article>
+    <article class="metric-card"><span class="metric-label">Authority Users</span><strong class="metric-value">{{ total_authorities }}</strong></article>
+    <article class="metric-card"><span class="metric-label">HKS Workers</span><strong class="metric-value">{{ total_workers }}</strong></article>
+    <article class="metric-card"><span class="metric-label">Present HKS Workers Today</span><strong class="metric-value">{{ present_workers }}</strong></article>
+    <article class="metric-card"><span class="metric-label">Available HKS Workers</span><strong class="metric-value">{{ available_workers }}</strong></article>
+    <article class="metric-card"><span class="metric-label">Completed Tasks</span><strong class="metric-value">{{ completed_tasks }}</strong></article>
+</section>
+<h2>Quick links</h2>
+<section class="quick-links" aria-label="Admin quick links">
+    <a class="quick-link" href="{% url 'authority_management' %}"><strong>Authority Management</strong><span>Create and manage authority accounts.</span></a>
+    <a class="quick-link" href="{% url 'hks_management' %}"><strong>HKS Workforce Management</strong><span>Create workers and review their current status.</span></a>
+    <a class="quick-link" href="{% url 'attendance_monitoring' %}"><strong>Attendance Monitoring</strong><span>Review daily worker attendance records.</span></a>
+    <a class="quick-link" href="{% url 'task_monitoring' %}"><strong>Task Monitoring</strong><span>Track maintenance assignments and progress.</span></a>
+    <a class="quick-link" href="{% url 'analytics' %}"><strong>Reports / Analytics</strong><span>Open the existing reports analytics view.</span></a>
+</section>
+{% endblock %}

@@ -1,0 +1,13 @@
+<aside class="sidebar">
+    <a class="brand" href="{% url 'admin_dashboard' %}"><span class="brand-mark">TW</span> TerraWatch</a>
+    <p class="side-label">Local-body Admin</p>
+    <nav class="side-nav" aria-label="Admin navigation">
+        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+        <a href="{% url 'authority_management' %}">Authority Management</a>
+        <a href="{% url 'hks_management' %}">HKS Workforce</a>
+        <a href="{% url 'attendance_monitoring' %}">Attendance</a>
+        <a href="{% url 'task_monitoring' %}">Tasks</a>
+        <a href="{% url 'analytics' %}">Reports / Analytics</a>
+    </nav>
+    <div class="side-footer"><nav class="side-nav"><a href="{% url 'logout' %}">Logout</a></nav></div>
+</aside>

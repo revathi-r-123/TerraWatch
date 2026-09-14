@@ -21,7 +21,19 @@
 <body>
     <div class="app-shell">
         {% block sidebar %}<aside class="sidebar">
-            {% if request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
+            {% if request.user.is_authenticated and request.user.is_superuser %}
+                <a class="brand" href="{% url 'admin_dashboard' %}"><span class="brand-mark">TW</span> TerraWatch</a>
+                <p class="side-label">Local-body Admin</p>
+                <nav class="side-nav" aria-label="Admin navigation">
+                    <a href="{% url 'admin_dashboard' %}"><span class="nav-icon">&#8962;</span> Dashboard</a>
+                    <a href="{% url 'authority_management' %}"><span class="nav-icon">&#128100;</span> Authority Management</a>
+                    <a href="{% url 'hks_management' %}"><span class="nav-icon">&#129529;</span> HKS Workforce</a>
+                    <a href="{% url 'attendance_monitoring' %}"><span class="nav-icon">&#128197;</span> Attendance</a>
+                    <a href="{% url 'task_monitoring' %}"><span class="nav-icon">&#10003;</span> Tasks</a>
+                    <a href="{% url 'analytics' %}"><span class="nav-icon">&#8599;</span> Reports / Analytics</a>
+                </nav>
+                <div class="side-footer"><nav class="side-nav" aria-label="Account navigation"><a href="{% url 'logout' %}"><span class="nav-icon">&#8594;</span> Logout</a></nav></div>
+            {% elif request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
                 <a class="brand" href="{% url 'authority_dashboard' %}"><span class="brand-mark">TW</span> TerraWatch</a>
                 <p class="side-label">Authority portal</p>
                 <nav class="side-nav" aria-label="Authority navigation">
@@ -69,19 +81,24 @@
         <div class="main-panel">
             {% block topbar %}
             <header class="topbar">
-                {% if request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
+                {% if request.user.is_authenticated and request.user.is_superuser %}
                     <div>
-                        <p class="topbar-title">Authority workspace</p>
+                        <p class="topbar-title">Panchayat Admin ({{ request.user.get_full_name|default:request.user.username }})</p>
+                        <p class="topbar-subtitle">Panchayat / Municipality operations overview.</p>
+                    </div>
+                {% elif request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
+                    <div>
+                        <p class="topbar-title">Authority ({{ request.user.get_full_name|default:request.user.username }})</p>
                         <p class="topbar-subtitle">Review, assign, and resolve community issues.</p>
                     </div>
                 {% elif request.user.is_authenticated and request.user.userprofile.role == 'worker' %}
                     <div>
-                        <p class="topbar-title">HKS Worker Dashboard</p>
+                        <p class="topbar-title">Haritha Karma Sena Worker ({{ request.user.get_full_name|default:request.user.username }})</p>
                         <p class="topbar-subtitle">View assigned work and keep your availability up to date.</p>
                     </div>
                 {% else %}
                     <div>
-                        <p class="topbar-title">Citizen Dashboard</p>
+                        <p class="topbar-title">Citizen ({{ request.user.get_full_name|default:request.user.username }})</p>
                         <p class="topbar-subtitle">Help keep your community clean and green.</p>
                     </div>
                 {% endif %}
@@ -92,7 +109,9 @@
                         <div>
                             <span class="user-name">{{ request.user.first_name }}</span>
                             <span class="user-role">
-                                {% if request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
+                                {% if request.user.is_authenticated and request.user.is_superuser %}
+                                    Admin
+                                {% elif request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
                                     Authority
                                 {% elif request.user.is_authenticated and request.user.userprofile.role == 'worker' %}
                                     HKS Worker
