@@ -25,6 +25,10 @@
 
 <br>
 
+{% if request.user.is_superuser %}
+<a class="button" href="{% url 'admin_dashboard' %}">Back to Dashboard</a>
+{% else %}
 <a class="button" href="{% url 'authority_dashboard' %}">Back to Dashboard</a>
+{% endif %}
 
 {% endblock %}
