@@ -925,6 +925,33 @@ def analytics(request):
         issue_type='Stagnant Water'
     ).count()
 
+    other_status_reports = max(
+        total_reports - submitted_reports - verified_reports - resolved_reports,
+        0
+    )
+    other_issue_reports = max(
+        total_reports - waste_reports - land_reports - water_reports,
+        0
+    )
+
+    def chart_percent(value):
+        if not total_reports:
+            return 0
+        return round(value * 100 / total_reports, 2)
+
+    status_stop_1 = chart_percent(submitted_reports)
+    status_stop_2 = chart_percent(
+        submitted_reports + verified_reports
+    )
+    status_stop_3 = chart_percent(
+        submitted_reports + verified_reports + resolved_reports
+    )
+    issue_stop_1 = chart_percent(waste_reports)
+    issue_stop_2 = chart_percent(waste_reports + land_reports)
+    issue_stop_3 = chart_percent(
+        waste_reports + land_reports + water_reports
+    )
+
     return render(
         request,
         'analytics.html',
@@ -935,7 +962,15 @@ def analytics(request):
             'resolved_reports': resolved_reports,
             'waste_reports': waste_reports,
             'land_reports': land_reports,
-            'water_reports': water_reports
+            'water_reports': water_reports,
+            'other_status_reports': other_status_reports,
+            'other_issue_reports': other_issue_reports,
+            'status_stop_1': status_stop_1,
+            'status_stop_2': status_stop_2,
+            'status_stop_3': status_stop_3,
+            'issue_stop_1': issue_stop_1,
+            'issue_stop_2': issue_stop_2,
+            'issue_stop_3': issue_stop_3
         }
     )
 

@@ -2,11 +2,54 @@
 
 {% block content %}
 
-<h1>TerraWatch Analytics</h1>
+<style>
+    .analytics-header { margin-bottom: 24px; }
+    .analytics-header h1 { margin-bottom: 5px; }
+    .analytics-header p { margin: 0; color: var(--muted); }
+    .chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 0 0 28px; }
+    .chart-card { padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); box-shadow: var(--shadow); }
+    .chart-card h2 { margin: 0 0 20px; font-size: 18px; }
+    .chart-content { display: flex; align-items: center; gap: 24px; }
+    .pie-chart { flex: 0 0 165px; width: 165px; height: 165px; border-radius: 50%; background: conic-gradient(var(--chart-slice-1) 0 var(--chart-stop-1), var(--chart-slice-2) var(--chart-stop-1) var(--chart-stop-2), var(--chart-slice-3) var(--chart-stop-2) var(--chart-stop-3), var(--chart-slice-4) var(--chart-stop-3) 100%); }
+    .chart-legend { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .chart-legend li { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+    .legend-swatch { width: 11px; height: 11px; border-radius: 3px; }
+    .legend-value { margin-left: auto; color: var(--ink); font-weight: 700; }
+    .analytics-section { margin-top: 26px; }
+    @media (max-width: 850px) { .chart-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) { .chart-content { align-items: flex-start; flex-direction: column; } }
+</style>
 
-<p>View statistics related to reported environmental issues.</p>
+<section class="analytics-header"><h1>TerraWatch Analytics</h1><p>View statistics related to reported environmental issues.</p></section>
 
-<h2>Report Statistics</h2>
+<section class="chart-grid" aria-label="Analytics charts">
+    <article class="chart-card">
+        <h2>Report Status</h2>
+        <div class="chart-content">
+            <div class="pie-chart" role="img" aria-label="Report status distribution" style="--chart-slice-1:#1d6b45; --chart-slice-2:#2f8f68; --chart-slice-3:#e89634; --chart-slice-4:#a9b9af; --chart-stop-1:{{ status_stop_1 }}%; --chart-stop-2:{{ status_stop_2 }}%; --chart-stop-3:{{ status_stop_3 }}%;"></div>
+            <ul class="chart-legend">
+                <li><span class="legend-swatch" style="background:#1d6b45"></span>Submitted <span class="legend-value">{{ submitted_reports }}</span></li>
+                <li><span class="legend-swatch" style="background:#2f8f68"></span>Verified <span class="legend-value">{{ verified_reports }}</span></li>
+                <li><span class="legend-swatch" style="background:#e89634"></span>Resolved <span class="legend-value">{{ resolved_reports }}</span></li>
+                <li><span class="legend-swatch" style="background:#a9b9af"></span>Other <span class="legend-value">{{ other_status_reports }}</span></li>
+            </ul>
+        </div>
+    </article>
+    <article class="chart-card">
+        <h2>Issue Categories</h2>
+        <div class="chart-content">
+            <div class="pie-chart" role="img" aria-label="Issue category distribution" style="--chart-slice-1:#1d6b45; --chart-slice-2:#e89634; --chart-slice-3:#4c8fc3; --chart-slice-4:#a9b9af; --chart-stop-1:{{ issue_stop_1 }}%; --chart-stop-2:{{ issue_stop_2 }}%; --chart-stop-3:{{ issue_stop_3 }}%;"></div>
+            <ul class="chart-legend">
+                <li><span class="legend-swatch" style="background:#1d6b45"></span>Waste dumping <span class="legend-value">{{ waste_reports }}</span></li>
+                <li><span class="legend-swatch" style="background:#e89634"></span>Land clearance <span class="legend-value">{{ land_reports }}</span></li>
+                <li><span class="legend-swatch" style="background:#4c8fc3"></span>Stagnant water <span class="legend-value">{{ water_reports }}</span></li>
+                <li><span class="legend-swatch" style="background:#a9b9af"></span>Other <span class="legend-value">{{ other_issue_reports }}</span></li>
+            </ul>
+        </div>
+    </article>
+</section>
+
+<section class="analytics-section"><h2>Report Statistics</h2>
 
 <ul>
     <li>Total Reports: {{ total_reports }}</li>
@@ -14,14 +57,16 @@
     <li>Verified Reports: {{ verified_reports }}</li>
     <li>Resolved Reports: {{ resolved_reports }}</li>
 </ul>
+</section>
 
-<h2>Issue Categories</h2>
+<section class="analytics-section"><h2>Issue Categories</h2>
 
 <ul>
     <li>Illegal Waste Dumping: {{ waste_reports }}</li>
     <li>Land Clearance: {{ land_reports }}</li>
     <li>Stagnant Water: {{ water_reports }}</li>
 </ul>
+</section>
 
 <br>
 
