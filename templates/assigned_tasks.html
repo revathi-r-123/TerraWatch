@@ -51,7 +51,7 @@
 
     <td>
         {% if task.before_photo %}
-            <a href="{{ task.before_photo.url }}" target="_blank" rel="noopener">View before</a>
+            <a class="button" href="{{ task.before_photo.url }}" target="_blank" rel="noopener">View before</a>
         {% else %}
             Not uploaded
         {% endif %}
@@ -59,7 +59,7 @@
 
     <td>
         {% if task.after_photo %}
-            <a href="{{ task.after_photo.url }}" target="_blank" rel="noopener">View after</a>
+            <a class="button" href="{{ task.after_photo.url }}" target="_blank" rel="noopener">View after</a>
         {% else %}
             Not uploaded
         {% endif %}
@@ -101,7 +101,7 @@
 
 <br>
 
-<a href="{% url 'worker_dashboard' %}">
+<a class="button" href="{% url 'worker_dashboard' %}">
     Back to Dashboard
 </a>
 
