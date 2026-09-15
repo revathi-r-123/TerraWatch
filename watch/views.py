@@ -1170,3 +1170,71 @@ def assigned_tasks(request):
         }
     )
 
+
+@login_required
+def upload_task_photo(request, task_id):
+
+    try:
+
+        profile = UserProfile.objects.get(
+            user=request.user
+        )
+
+        if profile.role != 'worker':
+
+            messages.error(
+                request,
+                'Access denied.'
+            )
+
+            return redirect('login')
+
+    except UserProfile.DoesNotExist:
+
+        messages.error(
+            request,
+            'User profile not found.'
+        )
+
+        return redirect('login')
+
+    if request.method != 'POST':
+
+        return redirect('assigned_tasks')
+
+    task = get_object_or_404(
+        MaintenanceTask,
+        id=task_id,
+        worker=request.user
+    )
+
+    photo_type = request.POST.get('photo_type')
+    photo = request.FILES.get('photo')
+
+    if (
+        photo_type not in ['before', 'after']
+        or not photo
+        or not photo.content_type.startswith('image/')
+    ):
+
+        messages.error(
+            request,
+            'Please choose a before or after photo to upload.'
+        )
+
+        return redirect('assigned_tasks')
+
+    if photo_type == 'before':
+        task.before_photo = photo
+    else:
+        task.after_photo = photo
+
+    task.save(update_fields=[f'{photo_type}_photo'])
+
+    messages.success(
+        request,
+        f'{photo_type.title()} photo uploaded for task {task.id}.'
+    )
+
+    return redirect('assigned_tasks')
+

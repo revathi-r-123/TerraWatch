@@ -19,6 +19,9 @@
     <th>Location</th>
     <th>Status</th>
     <th>Assigned Date</th>
+    <th>Before Photo</th>
+    <th>After Photo</th>
+    <th>Upload Photos</th>
 </tr>
 
 {% for task in tasks %}
@@ -45,12 +48,46 @@
     <td>
         {{ task.assigned_date }}
     </td>
+
+    <td>
+        {% if task.before_photo %}
+            <a href="{{ task.before_photo.url }}" target="_blank" rel="noopener">View before</a>
+        {% else %}
+            Not uploaded
+        {% endif %}
+    </td>
+
+    <td>
+        {% if task.after_photo %}
+            <a href="{{ task.after_photo.url }}" target="_blank" rel="noopener">View after</a>
+        {% else %}
+            Not uploaded
+        {% endif %}
+    </td>
+
+    <td>
+        <form method="post" enctype="multipart/form-data" action="{% url 'upload_task_photo' task.id %}">
+            {% csrf_token %}
+            <label>
+                Type
+                <select name="photo_type" required>
+                    <option value="before">Before work</option>
+                    <option value="after">After work</option>
+                </select>
+            </label>
+            <label>
+                Photo
+                <input type="file" name="photo" accept="image/*" required>
+            </label>
+            <button type="submit">Upload</button>
+        </form>
+    </td>
 </tr>
 
 {% empty %}
 
 <tr>
-    <td class="empty-row" colspan="6">
+    <td class="empty-row" colspan="9">
         No tasks have been assigned to you.
     </td>
 </tr>

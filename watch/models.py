@@ -226,6 +226,18 @@ class MaintenanceTask(models.Model):
         blank=True
     )
 
+    before_photo = models.ImageField(
+        upload_to='tasks/before/',
+        blank=True,
+        null=True
+    )
+
+    after_photo = models.ImageField(
+        upload_to='tasks/after/',
+        blank=True,
+        null=True
+    )
+
     def __str__(self):
         return f"Task {self.id} - {self.task_type}"
 

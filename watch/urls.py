@@ -182,6 +182,12 @@ urlpatterns = [
     ),
 
     path(
+        'worker/assigned-tasks/<int:task_id>/photo/',
+        views.upload_task_photo,
+        name='upload_task_photo'
+    ),
+
+    path(
         'worker/attendance/',
         views.attendance,
         name='attendance'
