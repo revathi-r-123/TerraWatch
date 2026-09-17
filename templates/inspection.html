@@ -4,20 +4,26 @@
 
 <h1>Inspection</h1>
 
-<p>Record and manage field inspections.</p>
+<p>Record field findings before deciding whether a report needs maintenance work.</p>
 
 <form method="post">
     {% csrf_token %}
 
-    <label>Report ID:</label>
-    <input type="number" name="report_id" required>
+    <label for="report_id">Citizen report:</label>
+    <select id="report_id" name="report_id" required>
+        <option value="">Choose a report</option>
+        {% for report in reports %}
+            <option value="{{ report.id }}" {% if selected_report and selected_report.id == report.id %}selected{% endif %}>#{{ report.id }} · {{ report.title|default:report.issue_type }} · {{ report.location }}</option>
+        {% endfor %}
+    </select>
+    {% if selected_report %}<p>Selected report: <strong>#{{ selected_report.id }}</strong> · {{ selected_report.location }}</p>{% endif %}
     <br><br>
 
     <label>Inspection Status:</label>
     <select name="inspection_status">
-        <option value="verified">Verified</option>
-        <option value="not_verified">Not Verified</option>
-        <option value="requires_action">Requires Action</option>
+        <option value="verified">Verified - issue confirmed</option>
+        <option value="not_verified">Not Verified - issue not confirmed</option>
+        <option value="requires_action">Requires Action - issue confirmed and work needed</option>
     </select>
     <br><br>
 

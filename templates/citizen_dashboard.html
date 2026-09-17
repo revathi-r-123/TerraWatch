@@ -24,14 +24,20 @@
 </section>
 
 <section class="summary-grid" aria-label="Report summary">
-    <article class="summary-card total"><div class="summary-card-header"><span>Total Reports</span><span class="summary-icon">▤</span></div><p class="summary-value">—</p><p class="summary-note">View all submitted reports</p></article>
-    <article class="summary-card pending"><div class="summary-card-header"><span>Pending</span><span class="summary-icon">◷</span></div><p class="summary-value">—</p><p class="summary-note">Awaiting review</p></article>
-    <article class="summary-card progress"><div class="summary-card-header"><span>In Progress</span><span class="summary-icon">↻</span></div><p class="summary-value">—</p><p class="summary-note">Currently being addressed</p></article>
-    <article class="summary-card completed"><div class="summary-card-header"><span>Completed</span><span class="summary-icon">✓</span></div><p class="summary-value">—</p><p class="summary-note">Resolved reports</p></article>
+    <article class="summary-card total"><div class="summary-card-header"><span>Total Reports</span><span class="summary-icon">▤</span></div><p class="summary-value">{{ total_reports }}</p><p class="summary-note">View all submitted reports</p></article>
+    <article class="summary-card pending"><div class="summary-card-header"><span>Pending</span><span class="summary-icon">◷</span></div><p class="summary-value">{{ pending_reports }}</p><p class="summary-note">Awaiting review</p></article>
+    <article class="summary-card progress"><div class="summary-card-header"><span>In Progress</span><span class="summary-icon">↻</span></div><p class="summary-value">{{ in_progress_reports }}</p><p class="summary-note">Currently being addressed</p></article>
+    <article class="summary-card completed"><div class="summary-card-header"><span>Completed</span><span class="summary-icon">✓</span></div><p class="summary-value">{{ completed_reports }}</p><p class="summary-note">Resolved reports</p></article>
 </section>
 
 <section class="dashboard-panel" aria-labelledby="recent-reports-heading">
     <div class="panel-heading"><h2 id="recent-reports-heading">Recent Reports</h2><a href="{% url 'my_reports' %}">View my reports →</a></div>
-    <div class="table-wrap"><table class="reports-table"><thead><tr><th>Report</th><th>Issue type</th><th>Location</th><th>Date</th><th>Status</th></tr></thead><tbody><tr><td colspan="5"><div class="empty-callout">Your submitted reports will appear here. <a href="{% url 'my_reports' %}">Open My Reports</a> to view the latest updates.</div></td></tr></tbody></table></div>
+    <div class="table-wrap"><table class="reports-table"><thead><tr><th>Report</th><th>Issue type</th><th>Location</th><th>Date</th><th>Status</th></tr></thead><tbody>
+        {% for report in reports %}
+            <tr><td><strong>{{ report.title|default:report.issue_type }}</strong><br><small>#{{ report.id }}</small></td><td>{{ report.get_issue_type_display }}</td><td>{{ report.location }}</td><td>{{ report.reported_date|date:"d M Y" }}</td><td>{{ report.status }}</td></tr>
+        {% empty %}
+            <tr><td colspan="5"><div class="empty-callout">You have not submitted any reports yet. <a href="{% url 'report_issue' %}">Report an issue</a> to get started.</div></td></tr>
+        {% endfor %}
+    </tbody></table></div>
 </section>
 {% endblock %}

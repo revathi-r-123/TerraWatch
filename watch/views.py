@@ -436,9 +436,24 @@ def citizen_dashboard(request):
 
         return redirect('login')
 
+    reports = Report.objects.filter(
+        citizen=request.user
+    ).order_by(
+        '-reported_date'
+    )
+
+    context = {
+        'reports': reports[:5],
+        'total_reports': reports.count(),
+        'pending_reports': reports.filter(status='Submitted').count(),
+        'in_progress_reports': reports.filter(status='In Progress').count(),
+        'completed_reports': reports.filter(status='Resolved').count(),
+    }
+
     return render(
         request,
-        'citizen_dashboard.html'
+        'citizen_dashboard.html',
+        context
     )
 
 
@@ -494,7 +509,7 @@ def report_issue(request):
                 }
             )
 
-        Report.objects.create(
+        report = Report.objects.create(
             citizen=request.user,
             issue_type=issue_type,
             # The selected issue type is the report title; citizens do not
@@ -504,6 +519,27 @@ def report_issue(request):
             location=location,
             image=image
         )
+
+        authority_users = User.objects.filter(
+            userprofile__role='authority'
+        )
+        admin_users = User.objects.filter(
+            is_superuser=True
+        )
+        notification_recipients = list(
+            authority_users.union(admin_users)
+        )
+
+        Notification.objects.bulk_create([
+            Notification(
+                user=recipient,
+                message=(
+                    f'New citizen report #{report.id} received: '
+                    f'{report.get_issue_type_display()} at {report.location}.'
+                )
+            )
+            for recipient in notification_recipients
+        ])
 
         messages.success(
             request,
@@ -745,6 +781,18 @@ def inspection(request):
         )
         remarks = request.POST.get('remarks')
 
+        inspection_status_map = {
+            'verified': 'Verified',
+            'not_verified': 'Not Verified',
+            'requires_action': 'Requires Action'
+        }
+
+        if inspection_status not in inspection_status_map:
+            messages.error(request, 'Please choose a valid inspection result.')
+            return redirect('inspection')
+
+        inspection_status = inspection_status_map[inspection_status]
+
         report = get_object_or_404(
             Report,
             id=report_id
@@ -778,13 +826,22 @@ def inspection(request):
             'Inspection recorded successfully.'
         )
 
-        return redirect(
-            'inspection'
-        )
+        if inspection_status == 'Requires Action':
+            return redirect(f'/authority/maintenance-tasks/?report_id={report.id}')
+
+        return redirect('manage_reports')
+
+    reports = Report.objects.all().order_by('-reported_date')
+    selected_report_id = request.GET.get('report_id')
+    selected_report = reports.filter(id=selected_report_id).first() if selected_report_id else None
 
     return render(
         request,
-        'inspection.html'
+        'inspection.html',
+        {
+            'reports': reports,
+            'selected_report': selected_report
+        }
     )
 
 
@@ -814,15 +871,59 @@ def maintenance_tasks(request):
 
         return redirect('login')
 
+    if request.method == 'POST':
+
+        report_id = request.POST.get('report_id')
+        task_type = request.POST.get('task_type')
+        worker_id = request.POST.get('worker_id')
+
+        valid_task_types = dict(MaintenanceTask.TASK_TYPE_CHOICES)
+        report = get_object_or_404(Report, id=report_id)
+        worker_profile = UserProfile.objects.filter(
+            user_id=worker_id,
+            role='worker'
+        ).select_related('user').first()
+
+        if task_type not in valid_task_types or worker_profile is None:
+            messages.error(request, 'Please choose a valid task type and worker.')
+            return redirect(f'/authority/maintenance-tasks/?report_id={report.id}')
+
+        MaintenanceTask.objects.create(
+            report=report,
+            task_type=task_type,
+            worker=worker_profile.user,
+            status='Assigned'
+        )
+
+        report.status = 'In Progress'
+        report.save(update_fields=['status'])
+
+        messages.success(request, 'Maintenance task assigned successfully.')
+        return redirect('maintenance_tasks')
+
     tasks = MaintenanceTask.objects.all().order_by(
         '-assigned_date'
     )
+
+    reports = Report.objects.filter(
+        status__in=['Under Inspection', 'Verified', 'In Progress']
+    ).order_by('-reported_date')
+    workers = UserProfile.objects.filter(
+        role='worker',
+        availability='available'
+    ).select_related('user').order_by('user__first_name', 'user__username')
+    selected_report_id = request.GET.get('report_id')
+    selected_report = reports.filter(id=selected_report_id).first() if selected_report_id else None
 
     return render(
         request,
         'maintenance_tasks.html',
         {
-            'tasks': tasks
+            'tasks': tasks,
+            'reports': reports,
+            'workers': workers,
+            'selected_report': selected_report,
+            'task_types': MaintenanceTask.TASK_TYPE_CHOICES
         }
     )
 

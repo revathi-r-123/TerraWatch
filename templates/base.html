@@ -67,11 +67,11 @@
             <a class="brand" href="{% url 'citizen_dashboard' %}"><span class="brand-mark">🌿</span> TerraWatch</a>
             <p class="side-label">Citizen portal</p>
             <nav class="side-nav" aria-label="Main navigation">
-                <a class="active" href="{% url 'citizen_dashboard' %}"><span class="nav-icon">⌂</span> Dashboard</a>
-                <a href="{% url 'report_issue' %}"><span class="nav-icon">＋</span> Report an issue</a>
-                <a href="{% url 'my_reports' %}"><span class="nav-icon">▤</span> My reports</a>
-                <a href="{% url 'notifications' %}"><span class="nav-icon">♢</span> Notifications</a>
-                <a href="{% url 'feedback' %}"><span class="nav-icon">✦</span> Feedback</a>
+                <a class="{% if request.resolver_match.url_name == 'citizen_dashboard' %}active{% endif %}" href="{% url 'citizen_dashboard' %}"><span class="nav-icon">⌂</span> Dashboard</a>
+                <a class="{% if request.resolver_match.url_name == 'report_issue' %}active{% endif %}" href="{% url 'report_issue' %}"><span class="nav-icon">＋</span> Report an issue</a>
+                <a class="{% if request.resolver_match.url_name == 'my_reports' or request.resolver_match.url_name == 'report_detail' %}active{% endif %}" href="{% url 'my_reports' %}"><span class="nav-icon">▤</span> My reports</a>
+                <a class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}" href="{% url 'notifications' %}"><span class="nav-icon">♢</span> Notifications</a>
+                <a class="{% if request.resolver_match.url_name == 'feedback' %}active{% endif %}" href="{% url 'feedback' %}"><span class="nav-icon">✦</span> Feedback</a>
             </nav>
             <div class="side-footer"><nav class="side-nav" aria-label="Account navigation"><a href="{% url 'logout' %}"><span class="nav-icon">↪</span> Logout</a></nav></div>
             {% else %}

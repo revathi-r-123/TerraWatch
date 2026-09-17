@@ -4,7 +4,33 @@
 
 <h1>Maintenance Tasks</h1>
 
-<p>Manage maintenance tasks assigned to HKS workers.</p>
+<p>Assign verified issues to available HKS workers and monitor their progress.</p>
+
+<form method="post" style="max-width:700px;margin-bottom:28px;">
+    {% csrf_token %}
+    <h2>Assign a worker</h2>
+    <label for="report_id">Report</label>
+    <select id="report_id" name="report_id" required>
+        <option value="">Choose a report</option>
+        {% for report in reports %}
+            <option value="{{ report.id }}" {% if selected_report and selected_report.id == report.id %}selected{% endif %}>#{{ report.id }} · {{ report.title|default:report.issue_type }} · {{ report.location }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    <label for="task_type">Task type</label>
+    <select id="task_type" name="task_type" required>
+        <option value="">Choose task type</option>
+        {% for value, label in task_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+    </select>
+    <br><br>
+    <label for="worker_id">Available worker</label>
+    <select id="worker_id" name="worker_id" required>
+        <option value="">Choose worker</option>
+        {% for worker in workers %}<option value="{{ worker.user.id }}">{{ worker.user.get_full_name|default:worker.user.username }}</option>{% empty %}<option value="">No available workers</option>{% endfor %}
+    </select>
+    <br><br>
+    <button type="submit">Assign task</button>
+</form>
 
 <div class="table-card"><div class="table-scroll"><table class="data-table">
     <tr>
