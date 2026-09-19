@@ -40,7 +40,7 @@
     @media (max-width: 900px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 560px) { .metric-grid, .quick-links { grid-template-columns: 1fr; } }
 </style>
-<section class="admin-header"><h1>Good morning, {{ request.user.first_name|default:request.user.username }}.</h1><p>Monitor reports, local teams, attendance, and field work from one place.</p></section>
+<section class="admin-header"><h1>{{ greeting }}, {{ request.user.first_name|default:request.user.username }}.</h1><p>Monitor reports, local teams, attendance, and field work from one place.</p></section>
 <section class="metric-grid" aria-label="Admin metrics">
     <article class="metric-card"><span class="metric-label">Total Reports</span><strong class="metric-value">{{ total_reports }}</strong></article>
     <article class="metric-card"><span class="metric-label">Pending Reports</span><strong class="metric-value">{{ pending_reports }}</strong></article>

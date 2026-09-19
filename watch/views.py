@@ -256,6 +256,14 @@ def _create_managed_account(request, role):
 @admin_required
 def admin_dashboard(request):
 
+    current_hour = timezone.localtime().hour
+    if current_hour < 12:
+        greeting = 'Good morning'
+    elif current_hour < 17:
+        greeting = 'Good afternoon'
+    else:
+        greeting = 'Good evening'
+
     total_reports = Report.objects.count()
     pending_reports = Report.objects.exclude(
         status__in=['Resolved', 'Rejected']
@@ -284,6 +292,7 @@ def admin_dashboard(request):
         request,
         'admin_dashboard.html',
         {
+            'greeting': greeting,
             'total_reports': total_reports,
             'pending_reports': pending_reports,
             'total_authorities': total_authorities,
@@ -291,6 +300,20 @@ def admin_dashboard(request):
             'present_workers': present_workers,
             'available_workers': available_workers,
             'completed_tasks': completed_tasks
+        }
+    )
+
+
+@admin_required
+def admin_review_reports(request):
+
+    reports = Report.objects.all().order_by('-reported_date')
+
+    return render(
+        request,
+        'admin_review_reports.html',
+        {
+            'reports': reports
         }
     )
 
@@ -715,24 +738,30 @@ def authority_dashboard(request):
 @login_required
 def manage_reports(request):
 
-    try:
+    if request.user.is_superuser:
 
-        profile = UserProfile.objects.get(
-            user=request.user
-        )
+        profile = None
 
-        if profile.role != 'authority':
+    else:
 
-            messages.error(
-                request,
-                'Access denied.'
+        try:
+
+            profile = UserProfile.objects.get(
+                user=request.user
             )
 
+            if profile.role != 'authority':
+
+                messages.error(
+                    request,
+                    'Access denied.'
+                )
+
+                return redirect('login')
+
+        except UserProfile.DoesNotExist:
+
             return redirect('login')
-
-    except UserProfile.DoesNotExist:
-
-        return redirect('login')
 
     reports = Report.objects.all().order_by(
         '-reported_date'

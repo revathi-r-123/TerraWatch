@@ -102,31 +102,38 @@
                         <p class="topbar-title">Haritha Karma Sena Worker ({{ request.user.get_full_name|default:request.user.username }})</p>
                         <p class="topbar-subtitle">View assigned work and keep your availability up to date.</p>
                     </div>
-                {% else %}
+                {% elif request.user.is_authenticated %}
                     <div>
                         <p class="topbar-title">Citizen ({{ request.user.get_full_name|default:request.user.username }})</p>
                         <p class="topbar-subtitle">Help keep your community clean and green.</p>
                     </div>
+                {% else %}
+                    <div>
+                        <p class="topbar-title">TerraWatch</p>
+                        <p class="topbar-subtitle">Community cleanliness and civic issue reporting.</p>
+                    </div>
                 {% endif %}
                 <div class="topbar-actions">
-                    <a class="notification-button" href="{% url 'notifications' %}" aria-label="View notifications">&#9671;<span class="notification-dot"></span></a>
-                    <div class="user-menu" aria-label="Current user">
-                        <span class="user-avatar">{{ request.user.first_name|slice:":1"|upper }}</span>
-                        <div>
-                            <span class="user-name">{{ request.user.first_name }}</span>
-                            <span class="user-role">
-                                {% if request.user.is_authenticated and request.user.is_superuser %}
-                                    Admin
-                                {% elif request.user.is_authenticated and request.user.userprofile.role == 'authority' %}
-                                    Authority
-                                {% elif request.user.is_authenticated and request.user.userprofile.role == 'worker' %}
-                                    HKS Worker
-                                {% else %}
-                                    Citizen
-                                {% endif %}
-                            </span>
+                    {% if request.user.is_authenticated %}
+                        <a class="notification-button" href="{% url 'notifications' %}" aria-label="View notifications">&#9671;<span class="notification-dot"></span></a>
+                        <div class="user-menu" aria-label="Current user">
+                            <span class="user-avatar">{{ request.user.first_name|slice:":1"|upper }}</span>
+                            <div>
+                                <span class="user-name">{{ request.user.first_name }}</span>
+                                <span class="user-role">
+                                    {% if request.user.is_superuser %}
+                                        Admin
+                                    {% elif request.user.userprofile.role == 'authority' %}
+                                        Authority
+                                    {% elif request.user.userprofile.role == 'worker' %}
+                                        HKS Worker
+                                    {% else %}
+                                        Citizen
+                                    {% endif %}
+                                </span>
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
             </header>
             {% endblock %}

@@ -76,7 +76,7 @@
 </section>
 
 <section class="breakdown-card" aria-labelledby="category-breakdown-heading">
-    <div class="breakdown-header"><div><h2 id="category-breakdown-heading">Category breakdown</h2><p>Compare issue volume across the main report types.</p></div><a href="{% url 'manage_reports' %}" class="back-action">Review reports</a></div>
+    <div class="breakdown-header"><div><h2 id="category-breakdown-heading">Category breakdown</h2><p>Compare issue volume across the main report types.</p></div>{% if request.user.is_superuser %}<a href="{% url 'admin_review_reports' %}" class="back-action">Review reports</a>{% else %}<a href="{% url 'manage_reports' %}" class="back-action">Review reports</a>{% endif %}</div>
     <ul class="breakdown-list">
         <li class="breakdown-row"><span class="breakdown-label">Illegal waste dumping</span><span class="bar-track"><span class="bar-fill" style="width:{% if total_reports %}{% widthratio waste_reports total_reports 100 %}{% else %}0{% endif %}%;"></span></span><span class="breakdown-count">{{ waste_reports }}</span></li>
         <li class="breakdown-row"><span class="breakdown-label">Land clearance</span><span class="bar-track"><span class="bar-fill" style="width:{% if total_reports %}{% widthratio land_reports total_reports 100 %}{% else %}0{% endif %}%;"></span></span><span class="breakdown-count">{{ land_reports }}</span></li>
