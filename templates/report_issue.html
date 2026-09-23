@@ -1,19 +1,69 @@
 {% extends 'base.html' %}
 
 {% block title %}Report an Issue - TerraWatch{% endblock %}
+{% block body_class %}role-dashboard role-citizen report-page{% endblock %}
 
 {% block content %}
 
-<h1>TerraWatch</h1>
+<style>
+    .report-layout { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr); gap:24px; align-items:start; max-width:1080px; margin:0 auto; }
+    .report-heading { margin-bottom:24px; }
+    .report-eyebrow { margin:0 0 8px; color:var(--forest); font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+    .report-heading h1 { margin:0 0 8px; color:var(--forest-dark); font-size:clamp(26px,4vw,36px); letter-spacing:-.02em; }
+    .report-heading p { max-width:650px; margin:0; color:var(--muted); font-size:15px; }
+    .report-form { max-width:none !important; padding:0 !important; border:1px solid var(--line) !important; border-radius:14px !important; background:var(--paper) !important; box-shadow:var(--shadow) !important; }
+    .form-section { padding:25px 27px; border-bottom:1px solid var(--line); }
+    .form-section:last-of-type { border-bottom:0; }
+    .section-kicker { display:flex; align-items:center; gap:10px; margin:0 0 18px; color:var(--forest-dark); font-size:16px; }
+    .section-number { display:grid; width:25px; height:25px; place-items:center; border-radius:50%; color:#fff; background:var(--forest); font-size:12px; }
+    .field { margin-bottom:18px; }
+    .field:last-child { margin-bottom:0; }
+    .field label { display:block; margin-bottom:6px; color:var(--ink); font-size:13px; font-weight:700; }
+    .field-help { margin:6px 0 0; color:var(--muted); font-size:12px; }
+    .report-form input:not([type="file"]),.report-form textarea,.report-form select { display:block; width:100%; max-width:none; margin:0; padding:11px 12px; border:1px solid #c9ddd0; border-radius:7px; color:var(--ink); background:#fff; outline:none; transition:border-color .2s,box-shadow .2s; }
+    .report-form textarea { min-height:120px; resize:vertical; }
+    .report-form input:focus,.report-form textarea:focus,.report-form select:focus { border-color:var(--forest); box-shadow:0 0 0 3px rgba(29,107,69,.12); }
+    .location-row { display:flex; gap:10px; }
+    .location-row input { min-width:0; }
+    .location-button { flex:0 0 auto; align-self:stretch; padding:0 13px !important; border:1px solid #b9d9c2 !important; color:var(--forest) !important; background:#f4faf5 !important; white-space:nowrap; }
+    .location-button:hover { background:#e5f4e9 !important; }
+    .status-message { min-height:18px; margin:7px 0 0; color:var(--muted); font-size:12px; }
+    .upload-box { padding:17px; border:1px dashed #b9d9c2; border-radius:9px; background:#f8fcf9; }
+    .upload-box input[type="file"] { width:100%; max-width:100%; color:var(--muted); font-size:13px; }
+    #imagePreview { display:none; width:100%; max-height:260px; margin-top:14px; border:1px solid var(--line); border-radius:8px; object-fit:contain; background:#fff; }
+    .form-actions { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:20px 27px; background:#fbfdfb; }
+    .form-actions .button { border:1px solid #b9d9c2; color:var(--forest); background:#fff; }
+    .form-actions .button:hover { background:#eaf6ed; }
+    .submit-button { padding:11px 18px !important; font-weight:700; box-shadow:0 5px 12px rgba(29,107,69,.15); }
+    .report-aside { padding:25px; border:1px solid #cce2d2; border-radius:14px; background:linear-gradient(145deg,#eaf6ed,#f8fcf9); }
+    .aside-icon { display:grid; width:42px; height:42px; place-items:center; margin-bottom:18px; border-radius:11px; color:#fff; background:var(--forest); font-size:21px; }
+    .report-aside h2 { margin:0 0 8px; color:var(--forest-dark); font-size:19px; }
+    .report-aside > p { margin:0; color:#587061; font-size:13px; }
+    .next-steps { display:grid; gap:15px; margin:22px 0 0; padding:0; list-style:none; }
+    .next-steps li { display:grid; grid-template-columns:28px 1fr; gap:10px; align-items:start; color:#385744; font-size:13px; }
+    .next-steps span { display:grid; width:25px; height:25px; place-items:center; border-radius:50%; color:var(--forest); background:#d7eddd; font-size:12px; font-weight:800; }
+    .privacy-note { margin:22px 0 0; padding-top:15px; border-top:1px solid #cce2d2; color:#6b7d73; font-size:11px; }
+    @media (max-width:820px) { .report-layout { grid-template-columns:1fr; } .report-aside { order:-1; } }
+    @media (max-width:560px) { .form-section { padding:21px 18px; } .form-actions { align-items:stretch; flex-direction:column-reverse; padding:18px; } .form-actions button,.form-actions .button { width:100%; text-align:center; } .location-row { display:block; } .location-button { width:100%; min-height:42px; margin-top:9px; } }
+</style>
 
-<h2>Report an Environmental Issue</h2>
+<div class="report-layout">
+    <div>
+        <header class="report-heading">
+            <p class="report-eyebrow">Citizen report centre</p>
+            <h1>Report an environmental issue</h1>
+            <p>Share the details below so your local response team can understand the issue and take action quickly.</p>
+        </header>
 
-<form method="POST" enctype="multipart/form-data">
+        <form class="report-form" method="POST" enctype="multipart/form-data">
 
 
 {% csrf_token %}
 
-<label for="issue_type">Issue Type:</label>
+<section class="form-section">
+<h2 class="section-kicker"><span class="section-number">1</span>Tell us what happened</h2>
+<div class="field">
+<label for="issue_type">Issue type <span aria-hidden="true">*</span></label>
 <select name="issue_type" id="issue_type" required>
     <option value="" disabled {% if not selected_issue_type %}selected{% endif %}>
         Select the issue type
@@ -28,16 +78,19 @@
         Stagnant Water Removal
     </option>
 </select>
+</div>
 
-<br><br>
-
-<label for="description">Additional Details (optional):</label>
-<br>
+<div class="field">
+<label for="description">Additional details <span class="field-help" style="display:inline;">(optional)</span></label>
 <textarea name="description" id="description" rows="5" placeholder="For example, the vegetation is blocking the footpath.">{{ description }}</textarea>
+</div>
+</section>
 
-<br><br>
-
-<label for="location">Location:</label>
+<section class="form-section">
+<h2 class="section-kicker"><span class="section-number">2</span>Pinpoint the location</h2>
+<div class="field">
+<label for="location">Location <span aria-hidden="true">*</span></label>
+<div class="location-row">
 <input
     type="text"
     name="location"
@@ -46,45 +99,49 @@
     placeholder="Use the button to get your current location, or enter it manually"
     required
 >
-<button type="button" id="getLocation">Use Current Location</button>
-<p id="locationMessage" role="status">
-    Live location uses the browser Geolocation API. GPS or device location services work best outdoors.
-</p>
+<button class="location-button" type="button" id="getLocation">Use current location</button>
+</div>
+<p class="status-message" id="locationMessage" role="status">Live location works best outdoors. You can also enter the location manually.</p>
+</div>
+</section>
 
-<br><br>
-
-<h3>Incident Photo</h3>
-
-<p>Upload an image of the environmental issue:</p>
-
-<label for="imageInput">Choose an image file:</label>
+<section class="form-section">
+<h2 class="section-kicker"><span class="section-number">3</span>Add a photo <span class="field-help" style="display:inline;">(optional)</span></h2>
+<div class="upload-box">
+<label for="imageInput">Incident photo</label>
+<p class="field-help">A clear image helps the response team verify and assess the issue.</p>
 <input
     type="file"
     name="image"
     id="imageInput"
     accept="image/*"
 >
-<p id="imageMessage" role="status">No image selected.</p>
+<p class="status-message" id="imageMessage" role="status">No image selected.</p>
 <img
     id="imagePreview"
     alt="Selected incident image preview"
-    style="display:none; max-width:100%; width:400px; max-height:300px; object-fit:contain; border:1px solid #c9ddd0; border-radius:7px;"
 >
-
-<br>
-
-<button type="submit">
-    Submit Report
-</button>
-
-
+</div>
+</section>
+<div class="form-actions">
+    <a class="button" href="{% url 'citizen_dashboard' %}">Back to dashboard</a>
+    <button class="submit-button" type="submit">Submit report</button>
+</div>
 </form>
+    </div>
 
-<br>
-
-<a class="button" href="{% url 'citizen_dashboard' %}">
-    Back to Dashboard
-</a>
+    <aside class="report-aside" aria-labelledby="next-steps-heading">
+        <div class="aside-icon" aria-hidden="true">&#10003;</div>
+        <h2 id="next-steps-heading">What happens next?</h2>
+        <p>Your report is routed to the local team responsible for reviewing community issues.</p>
+        <ol class="next-steps">
+            <li><span>1</span><div><strong>Review</strong><br>Our team checks the report details.</div></li>
+            <li><span>2</span><div><strong>Coordinate</strong><br>The issue is assigned to the right response team.</div></li>
+            <li><span>3</span><div><strong>Resolve</strong><br>You can follow progress from your dashboard.</div></li>
+        </ol>
+        <p class="privacy-note">Please avoid sharing personal information in the description or photos.</p>
+    </aside>
+</div>
 
 <script>
 
