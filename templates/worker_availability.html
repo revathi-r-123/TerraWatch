@@ -1,51 +1,6 @@
 {% extends 'base.html' %}
-
-{% block title %}Worker Availability{% endblock %}
-
+{% block title %}Availability · TerraWatch{% endblock %}
 {% block content %}
-
-<h1>TerraWatch</h1>
-
-<h2>Worker Availability</h2>
-
-<p>Update your current availability status.</p>
-
-<form method="post">
-    {% csrf_token %}
-
-    <label>Availability:</label>
-
-    <select name="availability" required>
-        <option value="available"
-            {% if profile.availability == 'available' %}selected{% endif %}>
-            Available
-        </option>
-
-        <option value="busy"
-            {% if profile.availability == 'busy' %}selected{% endif %}>
-            Busy
-        </option>
-
-        <option value="off_duty"
-            {% if profile.availability == 'off_duty' %}selected{% endif %}>
-            Off Duty
-        </option>
-    </select>
-
-    <br><br>
-
-    <button type="submit">Update Availability</button>
-</form>
-
-<br>
-
-<p>
-    Current Status:
-    <strong>{{ profile.get_availability_display }}</strong>
-</p>
-
-<br>
-
-<a class="button" href="{% url 'worker_dashboard' %}">Back to Dashboard</a>
-
+<header class="workspace-header"><div><p class="eyebrow">HKS worker portal</p><h1>Update availability</h1><p>Keep your current work status accurate so authority teams can coordinate assignments.</p></div><span class="status-pill">{{ profile.get_availability_display }}</span></header>
+<section class="content-grid"><form class="form-card" method="post">{% csrf_token %}<h2>Current work status</h2><p>Select the status that best reflects your availability today.</p><label class="field-label">Availability<select name="availability" required><option value="available" {% if profile.availability == 'available' %}selected{% endif %}>Available</option><option value="busy" {% if profile.availability == 'busy' %}selected{% endif %}>Busy</option><option value="off_duty" {% if profile.availability == 'off_duty' %}selected{% endif %}>Off Duty</option></select></label><div class="form-actions"><a class="button-secondary" href="{% url 'worker_dashboard' %}">Back to dashboard</a><button type="submit">Save availability</button></div></form><aside class="info-card"><h2>Why this matters</h2><ul class="info-list"><li><strong>Available</strong>You can be assigned new field work.</li><li><strong>Busy</strong>You are currently handling another task.</li><li><strong>Off duty</strong>You are unavailable for assignments.</li></ul></aside></section>
 {% endblock %}

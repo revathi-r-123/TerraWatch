@@ -1,65 +1,7 @@
 {% extends 'base.html' %}
-
+{% block title %}Maintenance tasks · TerraWatch{% endblock %}
 {% block content %}
-
-<h1>Maintenance Tasks</h1>
-
-<p>Assign verified issues to available HKS workers and monitor their progress.</p>
-
-<form method="post" style="max-width:700px;margin-bottom:28px;">
-    {% csrf_token %}
-    <h2>Assign a worker</h2>
-    <label for="report_id">Report</label>
-    <select id="report_id" name="report_id" required>
-        <option value="">Choose a report</option>
-        {% for report in reports %}
-            <option value="{{ report.id }}" {% if selected_report and selected_report.id == report.id %}selected{% endif %}>#{{ report.id }} · {{ report.title|default:report.issue_type }} · {{ report.location }}</option>
-        {% endfor %}
-    </select>
-    <br><br>
-    <label for="task_type">Task type</label>
-    <select id="task_type" name="task_type" required>
-        <option value="">Choose task type</option>
-        {% for value, label in task_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
-    </select>
-    <br><br>
-    <label for="worker_id">Available worker</label>
-    <select id="worker_id" name="worker_id" required>
-        <option value="">Choose worker</option>
-        {% for worker in workers %}<option value="{{ worker.user.id }}">{{ worker.user.get_full_name|default:worker.user.username }}</option>{% empty %}<option value="">No available workers</option>{% endfor %}
-    </select>
-    <br><br>
-    <button type="submit">Assign task</button>
-</form>
-
-<div class="table-card"><div class="table-scroll"><table class="data-table">
-    <tr>
-        <th>Task ID</th>
-        <th>Report</th>
-        <th>Task Type</th>
-        <th>Assigned Worker</th>
-        <th>Status</th>
-    </tr>
-
-    {% for task in tasks %}
-    <tr>
-        <td>{{ task.id }}</td>
-        <td>{{ task.report.id }}</td>
-        <td>{{ task.task_type }}</td>
-        <td>{{ task.worker }}</td>
-        <td>{{ task.status }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td class="empty-row" colspan="5">No maintenance tasks available.</td>
-    </tr>
-    {% endfor %}
-</table></div></div>
-
-{% include 'includes/pagination.html' with page_obj=tasks %}
-
-<br>
-
-<a class="button" href="{% url 'authority_dashboard' %}">Back to Dashboard</a>
-
+<header class="workspace-header"><div><p class="eyebrow">Authority portal</p><h1>Maintenance tasks</h1><p>Assign verified issues to available HKS workers and follow their progress.</p></div></header>
+<section class="content-grid"><form class="form-card" method="post">{% csrf_token %}<h2>Create assignment</h2><p>Choose a verified report, the required task, and an available worker.</p><div class="form-grid"><label class="field-label full-width">Report<select id="report_id" name="report_id" required><option value="">Choose a report</option>{% for report in reports %}<option value="{{ report.id }}" {% if selected_report and selected_report.id == report.id %}selected{% endif %}>#{{ report.id }} · {{ report.title|default:report.issue_type }} · {{ report.location }}</option>{% endfor %}</select></label><label class="field-label">Task type<select id="task_type" name="task_type" required><option value="">Choose task type</option>{% for value, label in task_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label><label class="field-label">Available worker<select id="worker_id" name="worker_id" required><option value="">Choose worker</option>{% for worker in workers %}<option value="{{ worker.user.id }}">{{ worker.user.get_full_name|default:worker.user.username }}</option>{% empty %}<option value="">No available workers</option>{% endfor %}</select></label></div><div class="form-actions"><button type="submit">Assign task</button></div></form><aside class="info-card"><h2>Assignment checklist</h2><ul class="info-list"><li><strong>Review the report</strong>Confirm the field inspection requires action.</li><li><strong>Match the worker</strong>Assign an available worker with the right capacity.</li></ul></aside></section>
+<section style="margin-top:28px"><header class="workspace-header"><div><h2>Active task register</h2><p>Track maintenance assignments and their current status.</p></div></header><div class="table-card"><div class="table-scroll"><table class="data-table"><thead><tr><th>Task ID</th><th>Report</th><th>Task type</th><th>Assigned worker</th><th>Status</th></tr></thead><tbody>{% for task in tasks %}<tr><td>#{{ task.id }}</td><td>#{{ task.report.id }}</td><td>{{ task.task_type }}</td><td>{{ task.worker }}</td><td><span class="status-pill">{{ task.status }}</span></td></tr>{% empty %}<tr class="empty-row"><td colspan="5">No maintenance tasks available.</td></tr>{% endfor %}</tbody></table></div></div>{% include 'includes/pagination.html' with page_obj=tasks %}</section>
 {% endblock %}

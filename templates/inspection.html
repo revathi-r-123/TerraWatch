@@ -1,42 +1,6 @@
 {% extends 'base.html' %}
-
+{% block title %}Inspection · TerraWatch{% endblock %}
 {% block content %}
-
-<h1>Inspection</h1>
-
-<p>Record field findings before deciding whether a report needs maintenance work.</p>
-
-<form method="post">
-    {% csrf_token %}
-
-    <label for="report_id">Citizen report:</label>
-    <select id="report_id" name="report_id" required>
-        <option value="">Choose a report</option>
-        {% for report in reports %}
-            <option value="{{ report.id }}" {% if selected_report and selected_report.id == report.id %}selected{% endif %}>#{{ report.id }} · {{ report.title|default:report.issue_type }} · {{ report.location }}</option>
-        {% endfor %}
-    </select>
-    {% if selected_report %}<p>Selected report: <strong>#{{ selected_report.id }}</strong> · {{ selected_report.location }}</p>{% endif %}
-    <br><br>
-
-    <label>Inspection Status:</label>
-    <select name="inspection_status">
-        <option value="verified">Verified - issue confirmed</option>
-        <option value="not_verified">Not Verified - issue not confirmed</option>
-        <option value="requires_action">Requires Action - issue confirmed and work needed</option>
-    </select>
-    <br><br>
-
-    <label>Inspection Remarks:</label>
-    <br>
-    <textarea name="remarks" rows="5" cols="40"></textarea>
-    <br><br>
-
-    <button type="submit">Submit Inspection</button>
-</form>
-
-<br>
-
-<a class="button" href="{% url 'authority_dashboard' %}">Back to Dashboard</a>
-
+<header class="workspace-header"><div><p class="eyebrow">Authority portal</p><h1>Field inspection</h1><p>Document your findings before determining the next step for a citizen report.</p></div></header>
+<section class="content-grid"><form class="form-card" method="post">{% csrf_token %}<h2>Inspection details</h2><p>Record a clear outcome to support a timely response.</p><div class="form-grid"><label class="field-label full-width">Citizen report<select id="report_id" name="report_id" required><option value="">Choose a report</option>{% for report in reports %}<option value="{{ report.id }}" {% if selected_report and selected_report.id == report.id %}selected{% endif %}>#{{ report.id }} · {{ report.title|default:report.issue_type }} · {{ report.location }}</option>{% endfor %}</select></label><label class="field-label full-width">Inspection status<select name="inspection_status"><option value="verified">Verified — issue confirmed</option><option value="not_verified">Not verified — issue not confirmed</option><option value="requires_action">Requires action — work needed</option></select></label><label class="field-label full-width">Inspection remarks<textarea name="remarks" rows="6" placeholder="Add observations from the field visit."></textarea></label></div><div class="form-actions"><a class="button-secondary" href="{% url 'authority_dashboard' %}">Back to dashboard</a><button type="submit">Submit inspection</button></div></form><aside class="info-card"><h2>Inspection guidance</h2><ul class="info-list"><li><strong>Confirm the issue</strong>Check the report location and evidence.</li><li><strong>Record evidence</strong>Use clear, factual field notes.</li><li><strong>Choose the next step</strong>Escalate confirmed issues that need work.</li></ul></aside></section>
 {% endblock %}

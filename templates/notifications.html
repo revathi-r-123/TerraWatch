@@ -1,67 +1,7 @@
 {% extends 'base.html' %}
-
-{% block title %}Notifications - TerraWatch{% endblock %}
-
+{% block title %}Notifications · TerraWatch{% endblock %}
 {% block content %}
-
-<h1>TerraWatch</h1>
-
-<h2>Notifications</h2>
-
-{% if notifications %}
-
-
-{% for notification in notifications %}
-
-    <p>
-        {{ notification.message }}
-    </p>
-
-    <small>
-        {{ notification.created_at }}
-    </small>
-
-    <hr>
-
-{% endfor %}
-
-
-{% else %}
-
-
-<p>No notifications available.</p>
-
-
-{% endif %}
-
+<header class="workspace-header"><div><p class="eyebrow">Activity centre</p><h1>Notifications</h1><p>Stay informed about report updates, assignments, and important community activity.</p></div></header>
+<section class="content-grid"><div class="form-card" style="padding:0;overflow:hidden;"><div style="padding:22px 24px;border-bottom:1px solid var(--line);"><h2>Recent updates</h2><p style="margin:5px 0 0;color:var(--muted);font-size:13px;">Updates relevant to your TerraWatch account.</p></div>{% if notifications %}<div>{% for notification in notifications %}<article style="padding:19px 24px;border-bottom:1px solid var(--line);"><strong style="display:block;color:var(--forest-dark);">{{ notification.message }}</strong><time style="display:block;margin-top:5px;color:var(--muted);font-size:12px;">{{ notification.created_at }}</time></article>{% endfor %}</div>{% else %}<div style="padding:34px 24px;text-align:center;color:var(--muted);">You’re all caught up. No notifications are available right now.</div>{% endif %}</div><aside class="info-card"><h2>Keep work moving</h2><p>Check notifications regularly for updates to reports and assigned work.</p>{% if role == 'citizen' %}<a class="button-secondary" href="{% url 'citizen_dashboard' %}">Back to dashboard</a>{% elif role == 'authority' %}<a class="button-secondary" href="{% url 'authority_dashboard' %}">Back to dashboard</a>{% elif role == 'worker' %}<a class="button-secondary" href="{% url 'worker_dashboard' %}">Back to dashboard</a>{% endif %}</aside></section>
 {% include 'includes/pagination.html' with page_obj=notifications %}
-
-<br>
-
-{% if role == 'citizen' %}
-
-
-<a class="button" href="{% url 'citizen_dashboard' %}">
-    Back to Dashboard
-</a>
-
-
-{% elif role == 'authority' %}
-
-
-<a class="button" href="{% url 'authority_dashboard' %}">
-    Back to Dashboard
-</a>
-
-
-{% elif role == 'worker' %}
-
-
-<a class="button" href="{% url 'worker_dashboard' %}">
-    Back to Dashboard
-</a>
-
-
-{% endif %}
-
 {% endblock %}

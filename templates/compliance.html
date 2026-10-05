@@ -1,41 +1,7 @@
 {% extends 'base.html' %}
-
+{% block title %}Compliance · TerraWatch{% endblock %}
 {% block content %}
-
-<h1>Landowner Compliance</h1>
-
-<p>Manage notices and compliance for applicable private land issues.</p>
-
-<div class="table-card"><div class="table-scroll"><table class="data-table">
-    <tr>
-        <th>Report ID</th>
-        <th>Location</th>
-        <th>Issue</th>
-        <th>Notice Date</th>
-        <th>Deadline</th>
-        <th>Compliance Status</th>
-    </tr>
-
-    {% for item in compliance_list %}
-    <tr>
-        <td>{{ item.report.id }}</td>
-        <td>{{ item.report.location }}</td>
-        <td>{{ item.report.title }}</td>
-        <td>{{ item.notice_date }}</td>
-        <td>{{ item.deadline }}</td>
-        <td>{{ item.status }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td class="empty-row" colspan="6">No compliance records available.</td>
-    </tr>
-    {% endfor %}
-</table></div></div>
-
+<header class="workspace-header"><div><p class="eyebrow">Authority portal</p><h1>Landowner compliance</h1><p>Review notices, deadlines, and resolution status for applicable private-land issues.</p></div><a class="button-secondary" href="{% url 'authority_dashboard' %}">Back to dashboard</a></header>
+<section class="table-card"><div class="table-scroll"><table class="data-table"><thead><tr><th>Report</th><th>Location</th><th>Issue</th><th>Notice date</th><th>Deadline</th><th>Status</th></tr></thead><tbody>{% for item in compliance_list %}<tr><td>#{{ item.report.id }}</td><td>{{ item.report.location }}</td><td>{{ item.report.title }}</td><td>{{ item.notice_date }}</td><td>{{ item.deadline }}</td><td><span class="status-pill">{{ item.status }}</span></td></tr>{% empty %}<tr class="empty-row"><td colspan="6">No compliance records are available.</td></tr>{% endfor %}</tbody></table></div></section>
 {% include 'includes/pagination.html' with page_obj=compliance_list %}
-
-<br>
-
-<a class="button" href="{% url 'authority_dashboard' %}">Back to Dashboard</a>
-
 {% endblock %}

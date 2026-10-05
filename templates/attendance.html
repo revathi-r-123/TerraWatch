@@ -1,56 +1,7 @@
 {% extends 'base.html' %}
-
-{% block title %}Attendance{% endblock %}
-
+{% block title %}Attendance · TerraWatch{% endblock %}
 {% block content %}
-
-<h1>TerraWatch</h1>
-
-<h2>HKS Worker Attendance</h2>
-
-<p>Mark your daily attendance.</p>
-
-<form method="post">
-    {% csrf_token %}
-
-    <label>Attendance Status:</label>
-
-    <select name="status" required>
-        <option value="Present">Present</option>
-        <option value="Absent">Absent</option>
-    </select>
-
-    <br><br>
-
-    <button type="submit">Mark Attendance</button>
-</form>
-
-<br>
-
-<h3>My Attendance</h3>
-
-<div class="table-card"><div class="table-scroll"><table class="data-table">
-    <tr>
-        <th>Date</th>
-        <th>Status</th>
-    </tr>
-
-    {% for record in attendance_records %}
-    <tr>
-        <td>{{ record.date }}</td>
-        <td>{{ record.status }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td class="empty-row" colspan="2">No attendance records available.</td>
-    </tr>
-    {% endfor %}
-</table></div></div>
-
-{% include 'includes/pagination.html' with page_obj=attendance_records %}
-
-<br>
-
-<a class="button" href="{% url 'worker_dashboard' %}">Back to Dashboard</a>
-
+<header class="workspace-header"><div><p class="eyebrow">HKS worker portal</p><h1>Daily attendance</h1><p>Record today’s status and review your recent attendance history.</p></div></header>
+<section class="content-grid"><div><form class="form-card" method="post">{% csrf_token %}<h2>Mark attendance</h2><p>Select the status that applies to your workday.</p><label class="field-label">Attendance status<select name="status" required><option value="Present">Present</option><option value="Absent">Absent</option></select></label><div class="form-actions"><a class="button-secondary" href="{% url 'worker_dashboard' %}">Back to dashboard</a><button type="submit">Save attendance</button></div></form></div><aside class="info-card"><h2>Daily record</h2><p>Your attendance record helps the local team plan work and coverage.</p></aside></section>
+<section style="margin-top:28px"><header class="workspace-header"><div><h2>Attendance history</h2><p>Your recorded attendance entries.</p></div></header><div class="table-card"><div class="table-scroll"><table class="data-table"><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody>{% for record in attendance_records %}<tr><td>{{ record.date }}</td><td><span class="status-pill">{{ record.status }}</span></td></tr>{% empty %}<tr class="empty-row"><td colspan="2">No attendance records available.</td></tr>{% endfor %}</tbody></table></div></div>{% include 'includes/pagination.html' with page_obj=attendance_records %}</section>
 {% endblock %}

@@ -221,13 +221,9 @@
                 const latitude = position.coords.latitude.toFixed(6);
                 const longitude = position.coords.longitude.toFixed(6);
                 const accuracy = Math.round(position.coords.accuracy);
-                const coordinates =
-                    `Latitude: ${latitude}, Longitude: ${longitude}`;
-
-                locationInput.value = coordinates;
                 locationMessage.innerText = accuracy > 200
-                    ? `Location is approximate (accuracy about ${accuracy} metres). Waiting for a more accurate fix...`
-                    : `Live coordinates updating (accuracy about ${accuracy} metres).`;
+                    ? `Location is approximate (accuracy about ${accuracy} metres). Looking up the place name...`
+                    : `Looking up the place name (accuracy about ${accuracy} metres)...`;
 
                 const now = Date.now();
                 const accuracyImproved = accuracy < lastPlaceLookupAccuracy;
@@ -258,10 +254,9 @@
                         );
 
                         if (place) {
-                            locationInput.value =
-                                `${place} (${coordinates})`;
+                            locationInput.value = place;
                             locationMessage.innerText =
-                                `${place} found. Live coordinates are updating (accuracy about ${accuracy} metres).`;
+                                `${place} found. Live location is updating (accuracy about ${accuracy} metres).`;
                         }
 
                     } catch (error) {

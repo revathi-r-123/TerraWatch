@@ -1,56 +1,16 @@
 {% extends 'base.html' %}
-
-{% block title %}Login - TerraWatch{% endblock %}
-
+{% block title %}Sign in · TerraWatch{% endblock %}
 {% block content %}
-
-<h1>TerraWatch</h1>
-
-<h2>Login</h2>
-
-{% if success %}
-    <p>{{ success }}</p>
-{% endif %}
-
-{% if error %}
-    <p>{{ error }}</p>
-{% endif %}
-
-<form method="POST" action="{% url 'login' %}">
-
-    {% csrf_token %}
-
-    <label>Username:</label>
-    <input
-        type="text"
-        name="username"
-        value="{{ entered_username }}"
-        required
-    >
-
-    <br><br>
-
-    <label>Password:</label>
-    <input
-        type="password"
-        name="password"
-        required
-    >
-
-    <br><br>
-
-    <button type="submit">Login</button>
-
-</form>
-
-<p>
-    Don't have an account?
-    <a class="button" href="{% url 'register' %}">Create an Account</a>
-</p>
-
-<p>
-    <a class="button" href="{% url 'home' %}">← Back to Home</a>
-</p>
-
+<section class="content-grid" style="max-width:900px;margin:42px auto;">
+    <div class="form-card">
+        <p class="eyebrow">Welcome to TerraWatch</p><h1>Sign in to your account</h1>
+        <p>Access your community reporting workspace and keep environmental issues moving.</p>
+        {% if success %}<p class="notice">{{ success }}</p>{% endif %}{% if error %}<p class="notice" style="border-color:#efd1cf;color:#8a322c;background:#fff3f2;">{{ error }}</p>{% endif %}
+        <form class="compact-form" method="POST" action="{% url 'login' %}">{% csrf_token %}
+            <div class="form-grid"><label class="field-label">Username<input type="text" name="username" value="{{ entered_username }}" autocomplete="username" required></label><label class="field-label">Password<input type="password" name="password" autocomplete="current-password" required></label></div>
+            <div class="form-actions"><a class="button-secondary" href="{% url 'home' %}">Back to home</a><button type="submit">Sign in</button></div>
+        </form>
+    </div>
+    <aside class="info-card"><p class="eyebrow">New here?</p><h2>Help improve your neighbourhood.</h2><p>Create a citizen account to report local environmental concerns and follow their resolution.</p><a class="button" href="{% url 'register' %}">Create an account</a></aside>
+</section>
 {% endblock %}
-
