@@ -1,0 +1,152 @@
+﻿TERRAWATCH PROJECT - STRUCTURE, FUNCTIONS, AND METHODOLOGY
+Generated from the source tree and implementation
+
+1. PROJECT PURPOSE
+TerraWatch is a Django web application for municipal/environmental issue reporting and field operations. Citizens submit reports with a location, description, issue category, and optional photo. Authorities inspect reports, create work tasks and monitor compliance. Haritha Karma Sena (HKS) workers manage availability, attendance, assigned tasks, and before/after evidence. Administrators manage accounts and monitor activity.
+
+2. PROJECT STRUCTURE
+Workspace root/
+|-- TerraWatch/                         Django project root
+|   |-- manage.py                       Django command line entry point
+|   |-- requirements.txt                Python package pins
+|   |-- db.sqlite3                       SQLite database file currently present in tree
+|   |-- media/                           Uploaded report/task images
+|   |-- TerraWatch/                      Django project configuration package
+|   |   |-- __init__.py                  Package marker
+|   |   |-- settings.py                  Apps, middleware, templates, DB, auth, locale/media configuration
+|   |   |-- urls.py                      Root URL configuration; includes watch.urls and Django admin
+|   |   |-- asgi.py                       ASGI application entry point
+|   |   `-- wsgi.py                       WSGI application entry point
+|   |-- watch/                            Main application
+|   |   |-- __init__.py                  Package marker
+|   |   |-- apps.py                       WatchConfig application declaration
+|   |   |-- admin.py                      Django admin registrations and list/search/filter settings
+|   |   |-- middleware.py                 Authenticated-page and auth-route cache prevention
+|   |   |-- models.py                     Application data models and relationships
+|   |   |-- urls.py                       Named routes for public, citizen, authority, admin, and worker pages
+|   |   |-- views.py                      Request handling, validation, role checks, persistence and response rendering
+|   |   |-- tests.py                       Application test module (currently no test cases identified in source review)
+|   |   `-- migrations/                   Schema history, migrations 0001 through 0008
+|   `-- templates/                        Server-rendered Django HTML pages
+|       |-- base.html                     Shared page layout
+|       |-- home.html, login_page.html, register.html
+|       |-- admin_*.html, authority_*.html, citizen_*.html, worker_*.html
+|       |-- report_issue.html, my_report.html, manage_reports.html, inspection.html
+|       |-- maintenance_tasks.html, task_monitoring.html, attendance*.html
+|       |-- compliance.html, analytics.html, notifications.html, feedback.html
+|       `-- includes/                     Reusable pagination and admin sidebar fragments
+`-- terra/                                Workspace-level Python virtual environment; dependencies/runtime files, not app source
+
+3. DJANGO CONFIGURATION AND ENTRY POINTS
+- TerraWatch/settings.py sets Django apps and middleware, templates directory, login URL, MySQL database connection (terrawatch_db at localhost), Asia/Kolkata timezone, media URL/root, and password validators. DEBUG is enabled in the current configuration.
+- TerraWatch/urls.py mounts the watch app at the site root, Django admin under /admin/, and serves uploaded media in DEBUG mode.
+- watch/urls.py maps URL paths to view functions with named routes used by redirects and templates.
+- manage.py main() sets DJANGO_SETTINGS_MODULE to TerraWatch.settings and invokes Django's command-line runner.
+- watch/apps.py WatchConfig identifies the Django application as watch.
+- WSGI and ASGI files expose the project for synchronous and asynchronous capable hosting interfaces.
+- requirements.txt pins Django 6.1, mysqlclient, Pillow, and supporting packages.
+
+4. DATA MODEL AND RELATIONSHIPS
+- UserProfile: one-to-one extension of Django User. Stores role (citizen, authority, worker), phone, and worker availability (available, busy, off_duty).
+- Report: belongs to a citizen User. Stores issue category (Waste Dumping, Land Clearance, Stagnant Water), title, description, location, optional image, report timestamp, workflow status, and priority.
+- Inspection: one-to-one with Report. Stores inspecting user, decision (Verified, Not Verified, Requires Action), remarks, and timestamp.
+- MaintenanceTask: many-to-one with Report; optional assigned worker User. Stores task type, status, assignment/completion times, remarks, and optional before/after photos.
+- Attendance: many-to-one with worker User. Stores date and Present/Absent status. A database unique constraint permits only one record per worker per date.
+- Compliance: one-to-one with Report. Stores landowner name/contact, notice/deadline dates, compliance status, and remarks.
+- Notification: belongs to a User; stores message, creation time, and read flag.
+- Feedback: belongs to a User; stores message and submission time.
+
+5. FUNCTION INVENTORY: watch/views.py
+Authentication and account support
+- home(request): renders the public home page.
+- register_view(request): validates matching passwords and unique username/email; creates a Django user and citizen profile; displays success or validation error.
+- login_view(request): authenticates credentials, logs in, and routes superusers/citizens/authorities/workers to their dashboards. Logs out and reports an error if profile/role is invalid.
+- logout_view(request): ends the session and renders the login page with a confirmation.
+- admin_required(view_func): decorator requiring an authenticated superuser; shows access-denied feedback and redirects unauthorized users.
+- _create_managed_account(request, role): validates username/password/email, creates Django user plus a profile for the requested managed role, and returns an error string or None.
+
+Local-body administration
+- admin_dashboard(request): calculates report, staff, attendance, availability, and completed-task totals plus a time-based greeting.
+- admin_review_reports(request): lists all reports newest first.
+- authority_management(request): creates authority users or toggles an authority account active state; displays authorities.
+- hks_management(request): creates worker accounts; shows workers together with their latest current task and attendance.
+- attendance_monitoring(request): lists worker attendance, newest dates first.
+- task_monitoring(request): lists tasks associated with workers or awaiting worker assignment.
+
+Citizen workflows
+- citizen_dashboard(request): verifies citizen role and displays recent reports and report status counts.
+- report_issue(request): verifies citizen role; validates category and location; creates report; notifies all authorities and superusers; redirects to own reports.
+- my_reports(request): lists the signed-in user's reports newest first.
+- report_detail(request, report_id): retrieves a report only if it belongs to the signed-in citizen and renders its details.
+
+Shared user interaction
+- notifications(request): lists the signed-in user's notifications newest first and provides their profile role to the template.
+- feedback(request): saves submitted feedback for the signed-in user and displays a confirmation.
+
+Authority workflows
+- authority_dashboard(request): checks authority role and renders the authority dashboard.
+- manage_reports(request): allows an authority or superuser to browse reports newest first.
+- inspection(request): checks authority role; validates an inspection decision; creates or updates the report's Inspection and updates report state. Requires Action leads to task planning.
+- maintenance_tasks(request): checks authority role; validates a task type and worker; creates assigned task; updates report status to In Progress; supplies tasks, eligible workers, report choices, and task categories.
+- compliance(request): checks authority role and lists compliance records.
+- analytics(request): allows authority or superuser; calculates report counts by status/category and percentage stops used by charts.
+
+Worker workflows
+- worker_dashboard(request): checks worker role and renders dashboard with worker profile.
+- worker_availability(request): checks worker role; updates availability if it is one of the allowed values.
+- attendance(request): checks worker role; marks or updates today's attendance and lists historical records.
+- assigned_tasks(request): checks worker role and lists tasks assigned to the current user.
+- upload_task_photo(request, task_id): checks worker role and task ownership; accepts POST before/after image uploads and stores them on the appropriate task field.
+
+Nested helper
+- analytics.chart_percent(value), defined within analytics(): returns the percentage of all reports, or zero if there are no reports.
+
+6. ROUTES: watch/urls.py
+- / -> home
+- /login/, /register/, /logout/ -> authentication and registration
+- /admin/dashboard/, /admin/review-reports/, /admin/authority/, /admin/hks/, /admin/attendance/, /admin/tasks/ -> local-body administration
+- /citizen/dashboard/, /citizen/report-issue/, /citizen/my-reports/, /citizen/report/<report_id>/ -> citizen functions
+- /notifications/, /feedback/ -> shared user functions
+- /authority/dashboard/, /authority/manage-reports/, /authority/inspection/, /authority/maintenance-tasks/, /authority/compliance/, /authority/analytics/ -> authority functions
+- /worker/dashboard/, /worker/assigned-tasks/, /worker/assigned-tasks/<task_id>/photo/, /worker/attendance/, /worker/availability/ -> worker functions
+- /admin/ -> Django built-in administration site (registered in root URL configuration)
+
+7. METHODOLOGY / APPLICATION WORKFLOW
+A. Account onboarding and access
+1. A citizen registers through register_view; Django stores a password hash and a UserProfile with citizen role.
+2. Administrators create authority and worker accounts through the protected management pages.
+3. On login, Django authentication verifies credentials. The profile role determines the landing dashboard. Views also check login and role before serving role-specific information or actions.
+
+B. Issue reporting and notification
+1. A citizen selects an allowed issue category and supplies a location, optional description, and optional image.
+2. The server validates the category and required location, creates a Report linked to the citizen, and assigns the initial Submitted status and default Medium priority.
+3. A notification is created for each authority and superuser to alert staff to the report.
+4. Citizens review their own reports and see current statuses from their dashboard/list.
+
+C. Inspection and decision
+1. Authorities review incoming reports and record one of Verified, Not Verified, or Requires Action, with optional remarks.
+2. Inspection is stored as a one-to-one record, updated on subsequent inspection submissions.
+3. The report status changes to Verified, Rejected, or Under Inspection respectively.
+
+D. Task assignment and field completion
+1. For work requiring action, an authority selects a report, task category, and available worker.
+2. The app creates a MaintenanceTask in Assigned status and changes the report to In Progress.
+3. Workers view their own assigned tasks, set availability, mark daily attendance, and upload before/after photographs for tasks they own.
+4. The data model supports task statuses Pending Assignment, Assigned, In Progress, Completed, and Rework and has a completion timestamp; the implemented view inventory reviewed here does not expose a worker status-update handler.
+
+E. Compliance, feedback, and monitoring
+1. Compliance records associate a report with a landowner, notices, deadlines, and compliance state.
+2. Authenticated users can submit feedback and view their notifications.
+3. Administration pages provide account, attendance, report, and task monitoring; analytics aggregates report counts for display.
+
+F. Technical pattern
+The application uses Django's Model-View-Template pattern: URL configuration dispatches requests to function-based views; views use Django ORM models to validate and persist records; templates render server-generated pages. Django sessions/authentication support login, decorators and explicit profile-role checks restrict access, message framework feedback reports outcomes, and media storage holds uploaded photos. Schema evolution is represented by numbered migrations.
+
+8. TEMPLATE AND FILE NOTES
+- Templates are HTML user-interface files rendered by views; base.html and includes/ provide shared layout/components.
+- The reported tree includes templates for report lists but no report_detail.html, while report_detail() attempts to render that template. Add the missing template or adjust the view if this endpoint is intended for use.
+- watch/tests.py exists, but no test cases were identified during this source inventory.
+- The root workspace contains a separate terra/ virtual environment; it is not part of the TerraWatch source project and is omitted from the application structure above.
+
+9. CONFIGURATION OBSERVATIONS
+The source configuration currently enables DEBUG, has an empty ALLOWED_HOSTS list, and contains a literal development SECRET_KEY and database credentials. These are configuration facts recorded from the local source, not deployment guidance. Before public deployment, use environment-based secrets/database settings and production Django security settings.

@@ -64,6 +64,7 @@ class Report(models.Model):
         ('Submitted', 'Submitted'),
         ('Under Inspection', 'Under Inspection'),
         ('Verified', 'Verified'),
+        ('Assigned', 'Assigned'),
         ('In Progress', 'In Progress'),
         ('Resolved', 'Resolved'),
         ('Rejected', 'Rejected'),
@@ -184,6 +185,7 @@ class MaintenanceTask(models.Model):
         ('Pending Assignment', 'Pending Assignment'),
         ('Assigned', 'Assigned'),
         ('In Progress', 'In Progress'),
+        ('Awaiting Review', 'Awaiting Review'),
         ('Completed', 'Completed'),
         ('Rework', 'Rework'),
     ]

@@ -159,6 +159,12 @@ urlpatterns = [
     ),
 
     path(
+        'authority/maintenance-tasks/<int:task_id>/review/',
+        views.review_maintenance_task,
+        name='review_maintenance_task'
+    ),
+
+    path(
         'authority/compliance/',
         views.compliance,
         name='compliance'
@@ -191,6 +197,12 @@ urlpatterns = [
         'worker/assigned-tasks/<int:task_id>/photo/',
         views.upload_task_photo,
         name='upload_task_photo'
+    ),
+
+    path(
+        'worker/assigned-tasks/<int:task_id>/start/',
+        views.start_maintenance_task,
+        name='start_maintenance_task'
     ),
 
     path(

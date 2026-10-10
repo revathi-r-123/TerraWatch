@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.utils import timezone
 from functools import wraps
 
@@ -372,7 +372,7 @@ def hks_management(request):
 
     for worker in hks_workers:
         worker.current_task = worker.user.assigned_tasks.filter(
-            status__in=['Assigned', 'In Progress']
+            status__in=['Assigned', 'In Progress', 'Awaiting Review', 'Rework']
         ).order_by('-assigned_date').first()
         worker.latest_attendance = worker.user.attendance_records.order_by(
             '-date'
@@ -469,6 +469,7 @@ def citizen_dashboard(request):
         'reports': reports[:5],
         'total_reports': reports.count(),
         'pending_reports': reports.filter(status='Submitted').count(),
+        'assigned_reports': reports.filter(status='Assigned').count(),
         'in_progress_reports': reports.filter(status='In Progress').count(),
         'completed_reports': reports.filter(status='Resolved').count(),
     }
@@ -588,6 +589,11 @@ def my_reports(request):
 
     reports = Report.objects.filter(
         citizen=request.user
+    ).prefetch_related(
+        Prefetch(
+            'maintenance_tasks',
+            queryset=MaintenanceTask.objects.filter(status='Completed')
+        )
     ).order_by(
         '-reported_date'
     )
@@ -808,6 +814,7 @@ def inspection(request):
         inspection_status = request.POST.get(
             'inspection_status'
         )
+        priority = request.POST.get('priority', 'Medium')
         remarks = request.POST.get('remarks')
 
         inspection_status_map = {
@@ -820,12 +827,17 @@ def inspection(request):
             messages.error(request, 'Please choose a valid inspection result.')
             return redirect('inspection')
 
+        if priority not in dict(Report.PRIORITY_CHOICES):
+            messages.error(request, 'Please choose a valid report priority.')
+            return redirect('inspection')
+
         inspection_status = inspection_status_map[inspection_status]
 
         report = get_object_or_404(
             Report,
             id=report_id
         )
+        report.priority = priority
 
         Inspection.objects.update_or_create(
             report=report,
@@ -881,24 +893,14 @@ def inspection(request):
 @login_required
 def maintenance_tasks(request):
 
-    try:
-
-        profile = UserProfile.objects.get(
-            user=request.user
-        )
-
-        if profile.role != 'authority':
-
-            messages.error(
-                request,
-                'Access denied.'
-            )
-
+    if not request.user.is_superuser:
+        try:
+            profile = UserProfile.objects.get(user=request.user)
+            if profile.role != 'authority':
+                messages.error(request, 'Access denied.')
+                return redirect('login')
+        except UserProfile.DoesNotExist:
             return redirect('login')
-
-    except UserProfile.DoesNotExist:
-
-        return redirect('login')
 
     if request.method == 'POST':
 
@@ -924,8 +926,17 @@ def maintenance_tasks(request):
             status='Assigned'
         )
 
-        report.status = 'In Progress'
-        report.save(update_fields=['status'])
+        Notification.objects.create(
+            user=worker_profile.user,
+            message=(
+                f'New task assigned for report #{report.id}: '
+                f'{valid_task_types[task_type]} at {report.location}.'
+            )
+        )
+
+        if report.status != 'In Progress':
+            report.status = 'Assigned'
+            report.save(update_fields=['status'])
 
         messages.success(request, 'Maintenance task assigned successfully.')
         return redirect('maintenance_tasks')
@@ -935,7 +946,7 @@ def maintenance_tasks(request):
     )
 
     reports = Report.objects.filter(
-        status__in=['Under Inspection', 'Verified', 'In Progress']
+        status__in=['Under Inspection', 'Verified', 'Assigned', 'In Progress']
     ).order_by('-reported_date')
     workers = UserProfile.objects.filter(
         role='worker',
@@ -1323,7 +1334,7 @@ def assigned_tasks(request):
 
     tasks = MaintenanceTask.objects.filter(
         worker=request.user
-    ).order_by(
+    ).select_related('report').order_by(
         '-assigned_date'
     )
 
@@ -1334,6 +1345,125 @@ def assigned_tasks(request):
             'tasks': tasks
         }
     )
+
+
+@login_required
+def start_maintenance_task(request, task_id):
+    if request.method != 'POST':
+        return redirect('assigned_tasks')
+
+    try:
+        profile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'User profile not found.')
+        return redirect('login')
+
+    if profile.role != 'worker':
+        messages.error(request, 'Access denied.')
+        return redirect('login')
+
+    task = get_object_or_404(
+        MaintenanceTask.objects.select_related('report'),
+        id=task_id,
+        worker=request.user
+    )
+    if task.status not in ['Assigned', 'Rework']:
+        messages.error(request, 'This task cannot be started in its current state.')
+        return redirect('assigned_tasks')
+
+    task.status = 'In Progress'
+    task.save(update_fields=['status'])
+    task.report.status = 'In Progress'
+    task.report.save(update_fields=['status'])
+    Notification.objects.create(
+        user=task.report.citizen,
+        message=f'Work has started on your report #{task.report.id}.'
+    )
+    messages.success(request, f'Task {task.id} marked as in progress.')
+    return redirect('assigned_tasks')
+
+
+@login_required
+def review_maintenance_task(request, task_id):
+    if request.method != 'POST':
+        return redirect('maintenance_tasks')
+
+    if not request.user.is_superuser:
+        try:
+            profile = UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            return redirect('login')
+        if profile.role != 'authority':
+            messages.error(request, 'Access denied.')
+            return redirect('login')
+
+    task = get_object_or_404(
+        MaintenanceTask.objects.select_related('report', 'worker'),
+        id=task_id
+    )
+    if task.status != 'Awaiting Review' or not task.after_photo:
+        messages.error(request, 'This task has no after-work photo awaiting review.')
+        return redirect('maintenance_tasks')
+
+    decision = request.POST.get('decision')
+    review_remarks = request.POST.get('review_remarks', '').strip()
+    if decision not in ['approve', 'rework']:
+        messages.error(request, 'Choose whether to approve the work or request rework.')
+        return redirect('maintenance_tasks')
+
+    report = task.report
+    if decision == 'rework':
+        task.status = 'Rework'
+        if review_remarks:
+            task.remarks = review_remarks
+        task.save(update_fields=['status', 'remarks'])
+        report.status = 'In Progress'
+        report.save(update_fields=['status'])
+        if task.worker:
+            Notification.objects.create(
+                user=task.worker,
+                message=(
+                    f'Rework was requested for task #{task.id} '
+                    f'(report #{report.id}).'
+                    + (f' Authority note: {review_remarks}' if review_remarks else '')
+                )
+            )
+        messages.success(request, f'Rework requested for task {task.id}.')
+        return redirect('maintenance_tasks')
+
+    task.status = 'Completed'
+    task.completed_date = timezone.now()
+    if review_remarks:
+        task.remarks = review_remarks
+    task.save(update_fields=['status', 'completed_date', 'remarks'])
+
+    remaining_tasks = report.maintenance_tasks.exclude(status='Completed').exists()
+    if remaining_tasks:
+        report.status = 'In Progress'
+        citizen_message = (
+            f'Task #{task.id} for report #{report.id} was approved. '
+            'Other assigned work is still in progress.'
+        )
+    else:
+        report.status = 'Resolved'
+        citizen_message = (
+            f'Your report #{report.id} has been resolved after authority review.'
+        )
+    report.save(update_fields=['status'])
+    Notification.objects.create(user=report.citizen, message=citizen_message)
+    if task.worker:
+        worker_message = (
+            f'Your task #{task.id} for report #{report.id} was approved and completed.'
+            if not remaining_tasks
+            else f'Your task #{task.id} for report #{report.id} was approved.'
+        )
+        Notification.objects.create(user=task.worker, message=worker_message)
+    messages.success(
+        request,
+        'Work approved. The report is resolved.' if not remaining_tasks
+        else 'Task approved. The report remains in progress while other tasks continue.'
+    )
+    return redirect('maintenance_tasks')
 
 
 @login_required
@@ -1373,6 +1503,10 @@ def upload_task_photo(request, task_id):
         worker=request.user
     )
 
+    if task.status not in ['Assigned', 'In Progress', 'Rework']:
+        messages.error(request, 'Photos can only be updated while work is active.')
+        return redirect('assigned_tasks')
+
     photo_type = request.POST.get('photo_type')
     photo = request.FILES.get('photo')
 
@@ -1389,16 +1523,48 @@ def upload_task_photo(request, task_id):
 
         return redirect('assigned_tasks')
 
+    if photo_type == 'after' and task.status != 'In Progress':
+        messages.error(request, 'Start the task before uploading an after-work photo.')
+        return redirect('assigned_tasks')
+
+    if photo_type == 'after' and not task.before_photo:
+        messages.error(request, 'Upload a before-work photo before the after-work photo.')
+        return redirect('assigned_tasks')
+
     if photo_type == 'before':
         task.before_photo = photo
     else:
         task.after_photo = photo
+        task.status = 'Awaiting Review'
 
-    task.save(update_fields=[f'{photo_type}_photo'])
+    update_fields = [f'{photo_type}_photo']
+    if photo_type == 'after':
+        update_fields.append('status')
+    task.save(update_fields=update_fields)
+
+    if photo_type == 'after':
+        recipients = list(User.objects.filter(userprofile__role='authority'))
+        recipients.extend(User.objects.filter(is_superuser=True).exclude(
+            id__in=[user.id for user in recipients]
+        ))
+        Notification.objects.bulk_create([
+            Notification(
+                user=recipient,
+                message=(
+                    f'After-work photo for task #{task.id} '
+                    f'(report #{task.report_id}) is ready for review.'
+                )
+            )
+            for recipient in recipients
+        ])
 
     messages.success(
         request,
-        f'{photo_type.title()} photo uploaded for task {task.id}.'
+        (
+            f'After-work photo uploaded for task {task.id}; it is awaiting authority review.'
+            if photo_type == 'after'
+            else f'Before-work photo uploaded for task {task.id}.'
+        )
     )
 
     return redirect('assigned_tasks')

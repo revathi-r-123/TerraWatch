@@ -1,7 +1,29 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Assigned tasks · TerraWatch{% endblock %}
 {% block content %}
-<header class="workspace-header"><div><p class="eyebrow">HKS worker portal</p><h1>Assigned tasks</h1><p>Review maintenance work, upload field evidence, and keep task records up to date.</p></div><a class="button-secondary" href="{% url 'worker_dashboard' %}">Back to dashboard</a></header>
-<section class="table-card"><div class="table-scroll"><table class="data-table"><thead><tr><th>Task</th><th>Issue</th><th>Location</th><th>Status</th><th>Assigned</th><th>Evidence</th><th>Upload photo</th></tr></thead><tbody>{% for task in tasks %}<tr><td><strong>#{{ task.id }}</strong><br><small>{{ task.task_type }}</small></td><td>{{ task.report.issue_type }}</td><td>{{ task.report.location }}</td><td><span class="status-pill">{{ task.status }}</span></td><td>{{ task.assigned_date }}</td><td>{% if task.before_photo %}<a href="{{ task.before_photo.url }}" target="_blank" rel="noopener">Before</a>{% else %}<span style="color:var(--muted)">No before photo</span>{% endif %}<br>{% if task.after_photo %}<a href="{{ task.after_photo.url }}" target="_blank" rel="noopener">After</a>{% else %}<span style="color:var(--muted)">No after photo</span>{% endif %}</td><td><form class="compact-form" method="post" enctype="multipart/form-data" action="{% url 'upload_task_photo' task.id %}">{% csrf_token %}<select name="photo_type" aria-label="Photo type" required><option value="before">Before work</option><option value="after">After work</option></select><input type="file" name="photo" accept="image/*" aria-label="Photo file" required><button class="table-action" type="submit">Upload</button></form></td></tr>{% empty %}<tr class="empty-row"><td colspan="7">No tasks have been assigned to you.</td></tr>{% endfor %}</tbody></table></div></section>
+<header class="workspace-header">
+    <div><p class="eyebrow">HKS worker portal</p><h1>Assigned tasks</h1><p>Review the report details, document the work, and submit the after-work photo for authority review.</p></div>
+    <a class="button-secondary" href="{% url 'worker_dashboard' %}">Back to dashboard</a>
+</header>
+<section class="table-card"><div class="table-scroll"><table class="data-table">
+<thead><tr><th>Task</th><th>Report details</th><th>Incident photo</th><th>Status and priority</th><th>Work evidence</th><th>Actions</th></tr></thead>
+<tbody>
+{% for task in tasks %}
+<tr>
+    <td><strong>#{{ task.id }}</strong><br>{{ task.task_type }}<br><small>Assigned {{ task.assigned_date|date:'d M Y, g:i A' }}</small></td>
+    <td><strong>{{ task.report.get_issue_type_display }}</strong><br>{{ task.report.location }}<br>{% if task.report.description %}<small>{{ task.report.description }}</small>{% else %}<small>No additional description supplied.</small>{% endif %}</td>
+    <td>{% if task.report.image %}<a href="{{ task.report.image.url }}" target="_blank" rel="noopener"><img src="{{ task.report.image.url }}" alt="Citizen's incident photo for report {{ task.report.id }}" style="max-width:150px;max-height:120px;object-fit:cover;border-radius:8px"></a>{% else %}<span>No incident photo</span>{% endif %}</td>
+    <td><span class="status-pill">{{ task.status }}</span><br>Priority: {{ task.report.priority }}</td>
+    <td>
+        {% if task.before_photo %}<a href="{{ task.before_photo.url }}" target="_blank" rel="noopener"><img src="{{ task.before_photo.url }}" alt="Before work for task {{ task.id }}" style="max-width:100px;max-height:80px;object-fit:cover;border-radius:6px"></a>{% else %}<span>No before photo</span>{% endif %}<br>
+        {% if task.after_photo %}<a href="{{ task.after_photo.url }}" target="_blank" rel="noopener"><img src="{{ task.after_photo.url }}" alt="After work for task {{ task.id }}" style="max-width:100px;max-height:80px;object-fit:cover;border-radius:6px"></a>{% else %}<span>No after photo</span>{% endif %}
+    </td>
+    <td>
+        {% if task.status == 'Assigned' or task.status == 'Rework' %}<form method="post" action="{% url 'start_maintenance_task' task.id %}">{% csrf_token %}<button type="submit">Start work</button></form>{% endif %}
+        {% if task.status == 'Assigned' or task.status == 'In Progress' or task.status == 'Rework' %}<form class="compact-form" method="post" enctype="multipart/form-data" action="{% url 'upload_task_photo' task.id %}">{% csrf_token %}<select name="photo_type" aria-label="Photo type" required>{% if not task.before_photo %}<option value="before">Before work</option>{% endif %}{% if task.status == 'In Progress' and task.before_photo %}<option value="after">After work</option>{% endif %}{% if task.status == 'In Progress' and not task.before_photo %}<option value="before">Before work</option>{% endif %}</select><input type="file" name="photo" accept="image/*" aria-label="Photo file" required><button class="table-action" type="submit">Upload photo</button></form>{% elif task.status == 'Awaiting Review' %}<span>Waiting for authority review</span>{% elif task.status == 'Completed' %}<span>Approved and complete</span>{% endif %}
+    </td>
+</tr>
+{% empty %}<tr class="empty-row"><td colspan="6">No tasks have been assigned to you.</td></tr>{% endfor %}
+</tbody></table></div></section>
 {% include 'includes/pagination.html' with page_obj=tasks %}
 {% endblock %}

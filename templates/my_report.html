@@ -84,6 +84,18 @@
                         {% endif %}
                     </div>
                 </div>
+                {% if report.status == 'Resolved' %}
+                    {% for task in report.maintenance_tasks.all %}
+                        {% if task.after_photo %}
+                            <div style="padding:0 22px 18px;">
+                                <strong>Authority-approved completion evidence</strong><br>
+                                <a href="{{ task.after_photo.url }}" target="_blank" rel="noopener">
+                                    <img src="{{ task.after_photo.url }}" alt="Approved completion photo for report {{ report.id }}" style="max-width:220px;max-height:160px;object-fit:cover;border-radius:8px;margin-top:8px;">
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
                 <div class="report-card-footer">
                     <span>Submitted for local authority review</span>
                     {% if report.status == 'Resolved' %}<span>✓ Issue resolved</span>{% else %}<span>Updates will appear here</span>{% endif %}
