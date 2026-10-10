@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Feedback · TerraWatch{% endblock %}
+{% block body_class %}role-dashboard role-admin{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+    <a class="brand" href="{% url 'admin_dashboard' %}"><span class="brand-mark">TW</span> TerraWatch</a>
+    <p class="side-label">Local-body Admin</p>
+    <nav class="side-nav" aria-label="Admin navigation">
+        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+        <a href="{% url 'authority_management' %}">Authority Management</a>
+        <a href="{% url 'hks_management' %}">HKS Workforce</a>
+        <a href="{% url 'attendance_monitoring' %}">Attendance</a>
+        <a href="{% url 'task_monitoring' %}">Tasks</a>
+        <a class="active" href="{% url 'admin_feedback' %}">Citizen Feedback</a>
+    </nav>
+    <div class="side-footer"><nav class="side-nav"><a href="{% url 'logout' %}">Logout</a></nav></div>
+</aside>
+{% endblock %}
+
+{% block topbar %}
+<header class="topbar"><div><p class="topbar-title">Panchayat Admin ({{ request.user.get_full_name|default:request.user.username }})</p><p class="topbar-subtitle">Review citizen feedback and manage replies.</p></div><div class="user-menu"><span class="user-avatar">A</span><div><span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span><span class="user-role">Admin</span></div></div></header>
+{% endblock %}
+
+{% block content %}
+<style>
+    .feedback-heading{margin-bottom:22px}.feedback-heading h1{margin:0 0 6px}.feedback-heading p{margin:0;color:var(--muted)}
+    .feedback-list{display:grid;gap:16px}.feedback-card{padding:20px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:var(--shadow)}
+    .feedback-meta{display:flex;justify-content:space-between;gap:12px;margin-bottom:12px;color:var(--muted);font-size:12px}.feedback-author{color:var(--forest-dark);font-size:14px;font-weight:700}
+    .feedback-message{margin:0 0 16px;line-height:1.6;white-space:pre-wrap}.reply-label{display:block;margin-bottom:7px;font-size:13px;font-weight:700;color:var(--forest-dark)}
+    .reply-box{box-sizing:border-box;width:100%;min-height:90px;padding:11px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical}.reply-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}.reply-status{color:var(--muted);font-size:12px}
+    .empty-feedback{padding:36px;text-align:center;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+</style>
+<header class="feedback-heading"><h1>Citizen Feedback</h1><p>Read submissions and send a reply directly to the citizen who wrote each one.</p></header>
+{% if feedback_items %}
+<section class="feedback-list" aria-label="Citizen feedback submissions">
+    {% for item in feedback_items %}
+    <article class="feedback-card">
+        <div class="feedback-meta"><span><span class="feedback-author">{{ item.user.get_full_name|default:item.user.username }}</span> · {{ item.user.email|default:"No email provided" }}</span><time>{{ item.submitted_at|date:"d M Y, H:i" }}</time></div>
+        <p class="feedback-message">{{ item.message }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="feedback_id" value="{{ item.id }}">
+            <label class="reply-label" for="reply-{{ item.id }}">Reply to this citizen</label>
+            <textarea class="reply-box" id="reply-{{ item.id }}" name="admin_reply" required placeholder="Write a respectful, helpful response…">{{ item.admin_reply }}</textarea>
+            <div class="reply-actions"><span class="reply-status">{% if item.replied_at %}Last sent {{ item.replied_at|date:"d M Y, H:i" }}{% else %}No reply sent yet{% endif %}</span><button type="submit">{% if item.admin_reply %}Update and send reply{% else %}Send reply{% endif %}</button></div>
+        </form>
+    </article>
+    {% endfor %}
+</section>
+{% else %}
+<div class="empty-feedback">No citizen feedback has been submitted yet.</div>
+{% endif %}
+{% endblock %}

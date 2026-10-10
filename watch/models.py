@@ -380,5 +380,22 @@ class Feedback(models.Model):
         auto_now_add=True
     )
 
+    admin_reply = models.TextField(
+        blank=True
+    )
+
+    replied_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    replied_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='feedback_replies'
+    )
+
     def __str__(self):
         return f"Feedback from {self.user.username}"

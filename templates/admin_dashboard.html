@@ -13,6 +13,7 @@
         <a href="{% url 'hks_management' %}">HKS Workforce</a>
         <a href="{% url 'attendance_monitoring' %}">Attendance</a>
         <a href="{% url 'task_monitoring' %}">Tasks</a>
+        <a href="{% url 'admin_feedback' %}">Citizen Feedback</a>
         <a href="{% url 'analytics' %}">Reports / Analytics</a>
     </nav>
     <div class="side-footer"><nav class="side-nav"><a href="{% url 'logout' %}">Logout</a></nav></div>
@@ -57,5 +58,6 @@
     <a class="quick-link" href="{% url 'attendance_monitoring' %}"><strong>Attendance Monitoring</strong><span>Review daily worker attendance records.</span></a>
     <a class="quick-link" href="{% url 'task_monitoring' %}"><strong>Task Monitoring</strong><span>Track maintenance assignments and progress.</span></a>
     <a class="quick-link" href="{% url 'analytics' %}"><strong>Reports / Analytics</strong><span>Open the existing reports analytics view.</span></a>
+    <a class="quick-link" href="{% url 'admin_feedback' %}"><strong>Citizen Feedback</strong><span>Read feedback and send a private reply to its citizen.</span></a>
 </section>
 {% endblock %}

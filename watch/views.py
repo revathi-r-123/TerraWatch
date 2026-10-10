@@ -320,6 +320,39 @@ def admin_review_reports(request):
 
 
 @admin_required
+def admin_feedback(request):
+    if request.method == 'POST':
+        feedback_item = get_object_or_404(
+            Feedback,
+            id=request.POST.get('feedback_id')
+        )
+        reply = request.POST.get('admin_reply', '').strip()
+        if not reply:
+            messages.error(request, 'Enter a reply before sending it to the citizen.')
+            return redirect('admin_feedback')
+
+        feedback_item.admin_reply = reply
+        feedback_item.replied_at = timezone.now()
+        feedback_item.replied_by = request.user
+        feedback_item.save(update_fields=['admin_reply', 'replied_at', 'replied_by'])
+        Notification.objects.create(
+            user=feedback_item.user,
+            message=f'An administrator replied to your feedback submitted on {feedback_item.submitted_at:%d %b %Y}: {reply}'
+        )
+        messages.success(request, f'Reply sent to {feedback_item.user.get_full_name() or feedback_item.user.username}.')
+        return redirect('admin_feedback')
+
+    feedback_items = Feedback.objects.select_related(
+        'user', 'replied_by'
+    ).order_by('-submitted_at')
+    return render(
+        request,
+        'admin_feedback.html',
+        {'feedback_items': feedback_items}
+    )
+
+
+@admin_required
 def admin_delete_report(request, report_id):
     report = get_object_or_404(
         Report.objects.select_related('citizen'),
