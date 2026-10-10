@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Delete demo report · TerraWatch{% endblock %}
+{% block body_class %}role-dashboard role-admin{% endblock %}
+{% block content %}
+<header class="workspace-header">
+    <div><p class="eyebrow">Local-body administration</p><h1>Delete report #{{ report.id }}?</h1><p>Use this page to clean up a demo or test report after the workflow demonstration.</p></div>
+    <a class="button-secondary" href="{% url 'admin_review_reports' %}">Cancel</a>
+</header>
+<section class="content-grid">
+    <div class="form-card">
+        <h2>{{ report.title|default:report.get_issue_type_display }}</h2>
+        <p><strong>Citizen:</strong> {{ report.citizen.get_full_name|default:report.citizen.username }}</p>
+        <p><strong>Location:</strong> {{ report.location }}</p>
+        <p><strong>Status:</strong> {{ report.status }} · <strong>Priority:</strong> {{ report.priority }}</p>
+        {% if report.image %}<p><strong>Incident photo:</strong> <a href="{{ report.image.url }}" target="_blank" rel="noopener">View photo</a></p>{% endif %}
+        <h3>Items that will be removed</h3>
+        <ul>
+            <li>The report and its incident photo, if present.</li>
+            <li>{{ related_counts.inspection }} inspection record(s).</li>
+            <li>{{ related_counts.tasks }} maintenance task(s), including their before-and-after photos.</li>
+            <li>{{ related_counts.compliance }} compliance record(s).</li>
+            <li>In-app notifications created by this report's workflow.</li>
+        </ul>
+        <p><strong>This action cannot be undone.</strong> It does not delete the citizen or worker accounts.</p>
+        <form method="post">{% csrf_token %}
+            <label class="field-label" style="display:block;margin:18px 0;">
+                <input type="checkbox" name="confirm_delete" value="yes" required>
+                I confirm that I want to permanently delete this report and its related records.
+            </label>
+            <div class="form-actions">
+                <a class="button-secondary" href="{% url 'admin_review_reports' %}">Keep report</a>
+                <button type="submit" style="background:#a63838;">Delete report and demo data</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -55,6 +55,12 @@ urlpatterns = [
     ),
 
     path(
+        'admin/reports/<int:report_id>/delete/',
+        views.admin_delete_report,
+        name='admin_delete_report'
+    ),
+
+    path(
         'admin/authority/',
         views.authority_management,
         name='authority_management'

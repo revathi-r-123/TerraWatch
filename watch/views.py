@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import Q, Prefetch
 from django.utils import timezone
 from functools import wraps
@@ -314,6 +315,73 @@ def admin_review_reports(request):
         'admin_review_reports.html',
         {
             'reports': reports
+        }
+    )
+
+
+@admin_required
+def admin_delete_report(request, report_id):
+    report = get_object_or_404(
+        Report.objects.select_related('citizen'),
+        id=report_id
+    )
+    tasks = list(report.maintenance_tasks.all())
+    related_counts = {
+        'inspection': Inspection.objects.filter(report=report).count(),
+        'tasks': len(tasks),
+        'compliance': Compliance.objects.filter(report=report).count(),
+    }
+
+    if request.method == 'POST':
+        if request.POST.get('confirm_delete') != 'yes':
+            messages.error(request, 'Confirm the deletion checkbox to continue.')
+        else:
+            report_id_value = report.id
+            file_refs = []
+            if report.image:
+                file_refs.append((report.image.storage, report.image.name))
+            for task in tasks:
+                for photo_field in (task.before_photo, task.after_photo):
+                    if photo_field:
+                        file_refs.append((photo_field.storage, photo_field.name))
+
+            notification_query = Q(
+                message__startswith=f'New citizen report #{report.id} received:'
+            ) | Q(message=f'Work has started on your report #{report.id}.') | Q(
+                message__startswith=f'Your report #{report.id} has been resolved'
+            ) | Q(message__startswith=f'New task assigned for report #{report.id}:')
+            for task in tasks:
+                notification_query |= (
+                    Q(message__startswith=f'After-work photo for task #{task.id} ') |
+                    Q(message__startswith=f'Rework was requested for task #{task.id} ') |
+                    Q(message__startswith=f'Your task #{task.id} for report #{report.id} ') |
+                    Q(message__startswith=f'Task #{task.id} for report #{report.id} ')
+                )
+
+            with transaction.atomic():
+                Notification.objects.filter(notification_query).delete()
+                report.delete()
+                unique_files = {}
+                for storage, name in file_refs:
+                    unique_files[(id(storage), name)] = (storage, name)
+                for storage, name in unique_files.values():
+                    transaction.on_commit(
+                        lambda storage=storage, name=name: storage.delete(name)
+                    )
+
+            messages.success(
+                request,
+                f'Report #{report_id_value}, its related records, uploaded photos, '
+                'and related notifications were deleted.'
+            )
+            return redirect('admin_review_reports')
+
+    return render(
+        request,
+        'admin_delete_report.html',
+        {
+            'report': report,
+            'related_counts': related_counts,
         }
     )
 
